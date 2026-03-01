@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mvp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:latest
+    command: ["-c", "/etc/nats/nats-server.conf"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - ./infra/nats/nats-server.conf:/etc/nats/nats-server.conf
+      - nats_data:/data/jetstream
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=mvp;Username=postgres;Password=postgres"
+      Jwt__Secret: "super-secret-key-at-least-32-chars-long!!"
+      Jwt__Issuer: "mvp-api"
+      Jwt__Audience: "mvp-web"
+      Nats__Url: "nats://nats:4222"
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+
+  chat:
+    build:
+      context: ./apps/chat
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/mvp"
+      NATS_URL: "nats://nats:4222"
+      PORT: "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: "http://api:5000"
+      NODE_ENV: production
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  nats_data:
