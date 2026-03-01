@@ -1,0 +1,20 @@
+# .NET
+apps/api/bin/
+apps/api/obj/
+apps/api/**/*.user
+apps/api/**/*.suo
+apps/api/.vs/
+
+# Go
+apps/chat/vendor/
+
+# Node / Bun
+apps/web/node_modules/
+apps/web/.next/
+apps/web/.env.local
+
+# General
+*.env
+*.env.local
+.DS_Store
+docker-compose.override.yml
