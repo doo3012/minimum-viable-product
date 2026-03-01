@@ -1,6 +1,11 @@
 // apps/api/Api/Program.cs
 using Api.Common.Behaviors;
 using Api.Common.Jwt;
+using Api.Features.Auth.ChangePassword;
+using Api.Features.Auth.Login;
+using Api.Features.BusinessUnits.Create;
+using Api.Features.BusinessUnits.List;
+using Api.Features.Companies.Onboard;
 using Api.Infrastructure.Persistence;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -46,6 +51,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapOnboard();
+app.MapLogin();
+app.MapChangePassword();
+app.MapCreateBu();
+app.MapListBu();
+
 app.Run();
 
 // Required for WebApplicationFactory in tests
