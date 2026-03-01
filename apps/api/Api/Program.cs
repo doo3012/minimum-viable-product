@@ -1,6 +1,13 @@
 // apps/api/Api/Program.cs
+using Api.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
-// (configure services here - subsequent tasks fill this in)
+
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+
+// (configure additional services here - subsequent tasks fill this in)
 var app = builder.Build();
 app.Run();
 
