@@ -1,0 +1,18 @@
+using Api.Infrastructure.Persistence;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+namespace Api.Features.Staff.List;
+
+public class ListStaffHandler(AppDbContext db)
+    : IRequestHandler<ListStaffQuery, IEnumerable<StaffDto>>
+{
+    public async Task<IEnumerable<StaffDto>> Handle(ListStaffQuery query, CancellationToken ct)
+    {
+        return await db.StaffProfiles
+            .Include(s => s.StaffBus)
+            .Select(s => new StaffDto(
+                s.Id, s.FirstName, s.LastName, s.UserId,
+                s.StaffBus.Select(b => new StaffBuDto(b.BuId, b.Email))))
+            .ToListAsync(ct);
+    }
+}

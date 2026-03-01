@@ -5,7 +5,15 @@ using Api.Features.Auth.ChangePassword;
 using Api.Features.Auth.Login;
 using Api.Features.BusinessUnits.Create;
 using Api.Features.BusinessUnits.List;
+using Api.Features.ChatPermissions.Grant;
+using Api.Features.ChatPermissions.ListByBu;
+using Api.Features.ChatPermissions.Revoke;
 using Api.Features.Companies.Onboard;
+using Api.Features.Staff.Create;
+using Api.Features.Staff.GetById;
+using Api.Features.Staff.List;
+using Api.Features.Staff.UpdateBuScoped;
+using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -20,6 +28,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<JwtService>();
+builder.Services.AddSingleton<INatsPublisher, NatsPublisher>();
 
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssemblyContaining<Program>();
@@ -55,11 +64,29 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Companies
 app.MapOnboard();
+
+// Auth
 app.MapLogin();
 app.MapChangePassword();
+
+// Business Units
 app.MapCreateBu();
 app.MapListBu();
+
+// Staff
+app.MapCreateStaff();
+app.MapListStaff();
+app.MapGetStaff();
+app.MapUpdateBuScoped();
+
+// Chat Permissions
+app.MapGrantPermission();
+app.MapRevokePermission();
+app.MapListPermissionsByBu();
+
+await NatsStreamBootstrap.EnsureStreamAsync(app.Configuration);
 
 app.Run();
 
