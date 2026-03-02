@@ -1,8 +1,10 @@
 using Api.Features.ChatPermissions.Grant;
+using Api.Infrastructure.Chat;
 using Api.Infrastructure.Persistence;
 using Api.Infrastructure.Persistence.Entities;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 
 namespace Api.Tests.Features.ChatPermissions;
 
@@ -21,7 +23,7 @@ public class GrantPermissionHandlerTests
         var db = CreateDb();
         var staffId = Guid.NewGuid();
         var buId = Guid.NewGuid();
-        var handler = new GrantPermissionHandler(db);
+        var handler = new GrantPermissionHandler(db, Substitute.For<IChatServiceClient>());
 
         var id = await handler.Handle(
             new GrantPermissionCommand(staffId, buId), CancellationToken.None);
@@ -41,7 +43,7 @@ public class GrantPermissionHandlerTests
         });
         await db.SaveChangesAsync();
 
-        var handler = new GrantPermissionHandler(db);
+        var handler = new GrantPermissionHandler(db, Substitute.For<IChatServiceClient>());
 
         var act = () => handler.Handle(
             new GrantPermissionCommand(staffId, buId), CancellationToken.None);

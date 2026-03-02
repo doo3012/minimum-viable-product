@@ -1,10 +1,11 @@
+using Api.Infrastructure.Chat;
 using Api.Infrastructure.Persistence;
 using Api.Infrastructure.Persistence.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 namespace Api.Features.ChatPermissions.Grant;
 
-public class GrantPermissionHandler(AppDbContext db)
+public class GrantPermissionHandler(AppDbContext db, IChatServiceClient chatClient)
     : IRequestHandler<GrantPermissionCommand, Guid>
 {
     public async Task<Guid> Handle(GrantPermissionCommand cmd, CancellationToken ct)
@@ -22,6 +23,16 @@ public class GrantPermissionHandler(AppDbContext db)
         };
         db.ChatPermissions.Add(permission);
         await db.SaveChangesAsync(ct);
+
+        // Sync with Chat Service
+        var staff = await db.StaffProfiles.FirstOrDefaultAsync(s => s.Id == cmd.StaffId, ct);
+        if (staff?.UserId != null)
+        {
+            var wsId = await chatClient.GetWorkspaceIdByBuIdAsync(cmd.BuId, ct);
+            if (wsId.HasValue)
+                await chatClient.AddMemberAsync(wsId.Value, staff.UserId.Value, ct);
+        }
+
         return permission.Id;
     }
 }

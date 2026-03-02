@@ -14,6 +14,7 @@ using Api.Features.Staff.Create;
 using Api.Features.Staff.GetById;
 using Api.Features.Staff.List;
 using Api.Features.Staff.UpdateBuScoped;
+using Api.Infrastructure.Chat;
 using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
 using FluentValidation;
@@ -32,6 +33,10 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddSingleton<INatsPublisher, NatsPublisher>();
+builder.Services.AddHttpClient<IChatServiceClient, ChatServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Chat:BaseUrl"] ?? "http://chat:8080");
+});
 
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssemblyContaining<Program>();
