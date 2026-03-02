@@ -8,6 +8,10 @@ public static class ListByBuEndpoint
         app.MapGet("/api/business-units/{buId:guid}/chat-permissions", async (
             Guid buId, IMediator mediator, CancellationToken ct) =>
             Results.Ok(await mediator.Send(new ListByBuQuery(buId), ct))
-        ).RequireAuthorization();
+        ).RequireAuthorization()
+         .WithName("ListChatPermissionsByBu")
+         .WithTags("ChatPermissions")
+         .Produces<IEnumerable<ChatPermissionDto>>(200)
+         .Produces(401);
     }
 }

@@ -15,7 +15,12 @@ public static class GrantPermissionEndpoint
             catch (InvalidOperationException ex) {
                 return Results.Conflict(new { error = ex.Message });
             }
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+          .WithName("GrantChatPermission")
+          .WithTags("ChatPermissions")
+          .Produces(201)
+          .Produces(409)
+          .Produces(401);
     }
 }
 public record GrantPermissionRequest(Guid StaffId, Guid BuId);

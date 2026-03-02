@@ -13,6 +13,11 @@ public static class RevokePermissionEndpoint
                 return Results.Ok();
             }
             catch (KeyNotFoundException) { return Results.NotFound(); }
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+          .WithName("RevokeChatPermission")
+          .WithTags("ChatPermissions")
+          .Produces(200)
+          .Produces(404)
+          .Produces(401);
     }
 }
