@@ -11,6 +11,7 @@ import {
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/stores/authStore';
 
 interface BusinessUnit {
   id: string;
@@ -35,6 +36,7 @@ const columns = [
 
 export default function BusinessUnitsPage() {
   const router = useRouter();
+  const { role } = useAuthStore();
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const { data, isLoading, isError } = useQuery<BusinessUnit[]>({
@@ -55,12 +57,14 @@ export default function BusinessUnitsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Business Units</h1>
-        <button
-          onClick={() => router.push('/business-units/new')}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
-        >
-          + New Business Unit
-        </button>
+        {(role === 'Owner' || role === 'Admin') && (
+          <button
+            onClick={() => router.push('/business-units/new')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+          >
+            + New Business Unit
+          </button>
+        )}
       </div>
 
       {isLoading && <p className="text-gray-500">Loading…</p>}

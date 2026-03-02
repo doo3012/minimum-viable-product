@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/stores/authStore';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
@@ -15,6 +16,11 @@ type FormData = z.infer<typeof schema>;
 export default function NewBusinessUnitPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { role } = useAuthStore();
+
+  if (role !== 'Owner' && role !== 'Admin') {
+    return <p className="text-red-500">Access denied. Only Owners and Admins can create business units.</p>;
+  }
 
   const {
     register,

@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/stores/authStore';
 
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required').max(100),
@@ -24,6 +25,11 @@ interface BusinessUnit {
 export default function NewStaffPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { role } = useAuthStore();
+
+  if (role !== 'Owner' && role !== 'Admin') {
+    return <p className="text-red-500">Access denied. Only Owners and Admins can create staff.</p>;
+  }
 
   const {
     register,
