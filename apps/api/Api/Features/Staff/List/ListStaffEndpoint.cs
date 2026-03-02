@@ -7,6 +7,10 @@ public static class ListStaffEndpoint
     {
         app.MapGet("/api/staff", async (IMediator mediator, CancellationToken ct) =>
             Results.Ok(await mediator.Send(new ListStaffQuery(), ct))
-        ).RequireAuthorization();
+        ).RequireAuthorization()
+        .WithName("ListStaff")
+        .WithTags("Staff")
+        .Produces<IEnumerable<StaffDto>>(200)
+        .Produces(401);
     }
 }

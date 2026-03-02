@@ -11,7 +11,11 @@ public static class UpdateBuScopedEndpoint
         {
             await mediator.Send(new UpdateBuScopedCommand(staffId, buId, req.Email), ct);
             return Results.Ok();
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+        .WithName("UpdateStaffBuScoped")
+        .WithTags("Staff")
+        .Produces(200)
+        .Produces(401);
     }
 }
 public record UpdateBuScopedRequest(string Email);

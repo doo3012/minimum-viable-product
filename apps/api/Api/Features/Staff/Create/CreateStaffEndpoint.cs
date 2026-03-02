@@ -16,7 +16,11 @@ public static class CreateStaffEndpoint
             { CompanyId = companyId };
             var id = await mediator.Send(cmd, ct);
             return Results.Created($"/api/staff/{id}", new { id });
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+        .WithName("CreateStaff")
+        .WithTags("Staff")
+        .Produces(201)
+        .Produces(401);
     }
 }
 public record CreateStaffRequest(
