@@ -13,7 +13,10 @@ public static class OnboardEndpoint
             var result = await mediator.Send(
                 new OnboardCommand(req.CompanyName, req.Address, req.ContactNumber), ct);
             return Results.Ok(result);
-        });
+        })
+        .WithName("OnboardCompany")
+        .WithTags("Companies")
+        .Produces<OnboardResult>(200);
     }
 }
 
