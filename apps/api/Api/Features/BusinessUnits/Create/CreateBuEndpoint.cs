@@ -11,7 +11,9 @@ public static class CreateBuEndpoint
             ClaimsPrincipal user, CancellationToken ct) =>
         {
             var companyId = Guid.Parse(user.FindFirst("company_id")!.Value);
-            var cmd = new CreateBuCommand(req.Name) { CompanyId = companyId };
+            var userId = Guid.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? user.FindFirst("sub")!.Value);
+            var cmd = new CreateBuCommand(req.Name) { CompanyId = companyId, UserId = userId };
             var id = await mediator.Send(cmd, ct);
             return Results.Created($"/api/business-units/{id}", new { id });
         })

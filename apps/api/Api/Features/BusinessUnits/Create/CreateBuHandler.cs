@@ -20,7 +20,7 @@ public class CreateBuHandler(AppDbContext db, INatsPublisher nats)
 
         await nats.PublishAsync("bu.created", new {
             bu_id = bu.Id, bu_name = bu.Name,
-            owner_user_id = Guid.Empty,
+            owner_user_id = cmd.UserId,
             company_id = bu.CompanyId
         }, ct);
 
