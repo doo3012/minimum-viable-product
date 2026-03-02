@@ -9,9 +9,12 @@ public class ListStaffHandler(AppDbContext db)
     public async Task<IEnumerable<StaffDto>> Handle(ListStaffQuery query, CancellationToken ct)
     {
         return await db.StaffProfiles
-            .Include(s => s.StaffBus)
+            .Include(s => s.User)
+            .Include(s => s.StaffBus).ThenInclude(sb => sb.Bu)
             .Select(s => new StaffDto(
                 s.Id, s.FirstName, s.LastName, s.UserId,
+                s.User != null ? s.User.Role : "",
+                s.StaffBus.Count,
                 s.StaffBus.Select(b => new StaffBuDto(b.BuId, b.Bu.Name, b.Email))))
             .ToListAsync(ct);
     }

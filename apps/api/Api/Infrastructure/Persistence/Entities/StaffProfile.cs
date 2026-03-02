@@ -8,5 +8,6 @@ public class StaffProfile
     public string FirstName { get; set; } = "";
     public string LastName { get; set; } = "";
     public DateTime CreatedAt { get; set; }
+    public User? User { get; set; }
     public ICollection<StaffBu> StaffBus { get; set; } = [];
 }

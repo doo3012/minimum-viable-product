@@ -34,7 +34,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<StaffProfile>(e => {
             e.ToTable("staff_profiles");
             e.HasQueryFilter(s => !_currentTenantId.HasValue || s.CompanyId == _currentTenantId);
-            e.HasOne<User>().WithMany().HasForeignKey(s => s.UserId);
+            e.HasOne(s => s.User).WithMany().HasForeignKey(s => s.UserId);
             e.HasMany(s => s.StaffBus).WithOne().HasForeignKey(sb => sb.StaffId);
         });
         modelBuilder.Entity<StaffBu>(e => {
