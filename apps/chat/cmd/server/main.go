@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	deliveryhttp "github.com/trainheartnet/mvp-chat/internal/delivery/http"
@@ -14,12 +15,15 @@ import (
 )
 
 func main() {
+	// Attempt to load .env.local if it exists
+	_ = godotenv.Load(".env.local")
+
 	ctx := context.Background()
 
 	// Connect to PostgreSQL
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://postgres:postgres@postgres:5432/mvp"
+		dsn = "postgres://postgres:postgres@postgres:5431/mvp"
 	}
 	pool, err := postgres.NewPool(ctx, dsn)
 	if err != nil {
