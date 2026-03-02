@@ -13,7 +13,7 @@ public static class LoginEndpoint
                 var result = await mediator.Send(new LoginCommand(req.Username, req.Password), ct);
                 ctx.Response.Cookies.Append("auth_token", result.Token, new CookieOptions {
                     HttpOnly = true, SameSite = SameSiteMode.Strict,
-                    Secure = false, // set true in prod
+                    Secure = false,
                     Expires = DateTimeOffset.UtcNow.AddHours(24)
                 });
                 return Results.Ok(new {
@@ -23,12 +23,19 @@ public static class LoginEndpoint
             catch (UnauthorizedAccessException) {
                 return Results.Unauthorized();
             }
-        });
+        })
+        .WithName("Login")
+        .WithTags("Auth")
+        .Produces(200)
+        .Produces(401);
 
         app.MapPost("/api/auth/logout", (HttpContext ctx) => {
             ctx.Response.Cookies.Delete("auth_token");
             return Results.Ok();
-        });
+        })
+        .WithName("Logout")
+        .WithTags("Auth")
+        .Produces(200);
     }
 }
 public record LoginRequest(string Username, string Password);

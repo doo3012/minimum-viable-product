@@ -1,6 +1,7 @@
 using MediatR;
 using System.Security.Claims;
 namespace Api.Features.Auth.ChangePassword;
+
 public static class ChangePasswordEndpoint
 {
     public static void MapChangePassword(this IEndpointRouteBuilder app)
@@ -13,7 +14,12 @@ public static class ChangePasswordEndpoint
                 ?? user.FindFirst("sub")!.Value);
             await mediator.Send(new ChangePasswordCommand(userId, req.NewPassword), ct);
             return Results.Ok();
-        }).RequireAuthorization();
+        })
+        .RequireAuthorization()
+        .WithName("ChangePassword")
+        .WithTags("Auth")
+        .Produces(200)
+        .Produces(401);
     }
 }
 public record ChangePasswordRequest(string NewPassword);
