@@ -15,6 +15,7 @@ type WorkspaceUseCase interface {
 	RemoveMember(ctx context.Context, workspaceID, userID uuid.UUID) error
 	ListMembers(ctx context.Context, workspaceID uuid.UUID) ([]*domain.WorkspaceMember, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Workspace, error)
+	GetByBuID(ctx context.Context, buID uuid.UUID) (*domain.Workspace, error)
 }
 
 type workspaceUseCase struct {
@@ -58,4 +59,8 @@ func (uc *workspaceUseCase) ListMembers(ctx context.Context, workspaceID uuid.UU
 
 func (uc *workspaceUseCase) GetByID(ctx context.Context, id uuid.UUID) (*domain.Workspace, error) {
 	return uc.wsRepo.GetByID(ctx, id)
+}
+
+func (uc *workspaceUseCase) GetByBuID(ctx context.Context, buID uuid.UUID) (*domain.Workspace, error) {
+	return uc.wsRepo.GetByBuID(ctx, buID)
 }

@@ -28,6 +28,18 @@ func (h *WorkspaceHandler) GetWorkspace(c echo.Context) error {
 	return c.JSON(http.StatusOK, ws)
 }
 
+func (h *WorkspaceHandler) GetWorkspaceByBuID(c echo.Context) error {
+	buID, err := uuid.Parse(c.Param("buId"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid bu_id")
+	}
+	ws, err := h.uc.GetByBuID(c.Request().Context(), buID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "workspace not found")
+	}
+	return c.JSON(http.StatusOK, ws)
+}
+
 func (h *WorkspaceHandler) ListMembers(c echo.Context) error {
 	id, _ := uuid.Parse(c.Param("id"))
 	members, err := h.uc.ListMembers(c.Request().Context(), id)
