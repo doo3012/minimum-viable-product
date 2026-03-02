@@ -1,6 +1,7 @@
 using MediatR;
 using System.Security.Claims;
 namespace Api.Features.BusinessUnits.List;
+
 public static class ListBuEndpoint
 {
     public static void MapListBu(this IEndpointRouteBuilder app)
@@ -10,6 +11,11 @@ public static class ListBuEndpoint
         {
             var result = await mediator.Send(new ListBuQuery(), ct);
             return Results.Ok(result);
-        }).RequireAuthorization();
+        })
+        .RequireAuthorization()
+        .WithName("ListBusinessUnits")
+        .WithTags("BusinessUnits")
+        .Produces<IEnumerable<BusinessUnitDto>>(200)
+        .Produces(401);
     }
 }

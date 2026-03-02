@@ -1,6 +1,7 @@
 using MediatR;
 using System.Security.Claims;
 namespace Api.Features.BusinessUnits.Create;
+
 public static class CreateBuEndpoint
 {
     public static void MapCreateBu(this IEndpointRouteBuilder app)
@@ -13,7 +14,12 @@ public static class CreateBuEndpoint
             var cmd = new CreateBuCommand(req.Name) { CompanyId = companyId };
             var id = await mediator.Send(cmd, ct);
             return Results.Created($"/api/business-units/{id}", new { id });
-        }).RequireAuthorization();
+        })
+        .RequireAuthorization()
+        .WithName("CreateBusinessUnit")
+        .WithTags("BusinessUnits")
+        .Produces(201)
+        .Produces(401);
     }
 }
 public record CreateBuRequest(string Name);
