@@ -7,6 +7,7 @@ import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/stores/authStore';
 
 const profileSchema = z.object({
   firstName: z.string().min(1, 'Required').max(100),
@@ -26,7 +27,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const { id } = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'profile' | 'bu'>('profile');
+  const { role } = useAuthStore();
+  const [tab, setTab] = useState<'profile' | 'bu' | 'password'>('profile');
 
   const { data, isLoading } = useQuery<StaffDetail>({
     queryKey: ['staff', id],
@@ -58,6 +60,20 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     onError: () => Swal.fire('Error', 'Update failed.', 'error'),
   });
 
+  const resetPassword = useMutation({
+    mutationFn: () => api.post(`/staff/${id}/reset-password`),
+    onSuccess: (res) => {
+      Swal.fire('Password Reset', `New password: ${res.data.newPassword}`, 'success');
+    },
+    onError: () => Swal.fire('Error', 'Reset failed.', 'error'),
+  });
+
+  const setPasswordMutation = useMutation({
+    mutationFn: (newPassword: string) => api.put(`/staff/${id}/password`, { newPassword }),
+    onSuccess: () => Swal.fire('Saved!', 'Password has been set.', 'success'),
+    onError: () => Swal.fire('Error', 'Set password failed.', 'error'),
+  });
+
   if (isLoading) return <p className="text-gray-500">Loading…</p>;
   if (!data) return <p className="text-red-500">Staff member not found.</p>;
 
@@ -87,6 +103,18 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             {t === 'profile' ? 'Global Profile' : 'BU-Scoped Data'}
           </button>
         ))}
+        {(role === 'Owner' || role === 'Admin') && (
+          <button
+            onClick={() => setTab('password')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              tab === 'password'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Password
+          </button>
+        )}
       </div>
 
       {tab === 'profile' && (
@@ -146,6 +174,29 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {tab === 'password' && (
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Reset Password</h3>
+            <p className="text-xs text-gray-500 mb-3">
+              Generate a new random password. The staff member will be required to change it on next login.
+            </p>
+            <button
+              onClick={() => resetPassword.mutate()}
+              disabled={resetPassword.isPending}
+              className="bg-orange-500 text-white px-4 py-2 rounded-md text-sm hover:bg-orange-600 disabled:opacity-50"
+            >
+              {resetPassword.isPending ? 'Resetting\u2026' : 'Reset Password'}
+            </button>
+          </div>
+          <hr />
+          <SetPasswordForm
+            onSubmit={(pw) => setPasswordMutation.mutate(pw)}
+            isPending={setPasswordMutation.isPending}
+          />
         </div>
       )}
     </div>
@@ -208,5 +259,54 @@ function BuScopedRow({
         )}
       </td>
     </tr>
+  );
+}
+
+function SetPasswordForm({ onSubmit, isPending }: { onSubmit: (pw: string) => void; isPending: boolean }) {
+  const [pw, setPw] = useState('');
+  const [confirm, setConfirm] = useState('');
+
+  return (
+    <div>
+      <h3 className="text-sm font-medium text-gray-700 mb-2">Set Password</h3>
+      <p className="text-xs text-gray-500 mb-3">
+        Set a specific password for this staff member. They will be required to change it on next login.
+      </p>
+      <div className="space-y-3">
+        <input
+          type="password"
+          placeholder="New password (min 8 chars)"
+          value={pw}
+          onChange={(e) => setPw(e.target.value)}
+          className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="password"
+          placeholder="Confirm password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={() => {
+            if (pw.length < 8) {
+              Swal.fire('Error', 'Password must be at least 8 characters.', 'error');
+              return;
+            }
+            if (pw !== confirm) {
+              Swal.fire('Error', 'Passwords do not match.', 'error');
+              return;
+            }
+            onSubmit(pw);
+            setPw('');
+            setConfirm('');
+          }}
+          disabled={isPending}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isPending ? 'Setting\u2026' : 'Set Password'}
+        </button>
+      </div>
+    </div>
   );
 }
