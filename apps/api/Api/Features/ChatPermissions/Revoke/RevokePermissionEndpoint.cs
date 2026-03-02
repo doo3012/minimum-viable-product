@@ -18,6 +18,7 @@ public static class RevokePermissionEndpoint
           .WithTags("ChatPermissions")
           .Produces(200)
           .Produces(404)
-          .Produces(401);
+          .Produces(401)
+          .Produces(403);
     }
 }

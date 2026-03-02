@@ -20,7 +20,8 @@ public static class GrantPermissionEndpoint
           .WithTags("ChatPermissions")
           .Produces(201)
           .Produces(409)
-          .Produces(401);
+          .Produces(401)
+          .Produces(403);
     }
 }
 public record GrantPermissionRequest(Guid StaffId, Guid BuId);

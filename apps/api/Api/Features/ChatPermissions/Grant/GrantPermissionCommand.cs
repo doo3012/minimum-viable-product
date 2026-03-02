@@ -3,4 +3,7 @@ using MediatR;
 namespace Api.Features.ChatPermissions.Grant;
 
 public record GrantPermissionCommand(Guid StaffId, Guid BuId)
-    : IRequest<Guid>, ITenantScoped;
+    : IRequest<Guid>, ITenantScoped, IAuthorizeRole
+{
+    public string[] AllowedRoles => ["Owner"];
+}

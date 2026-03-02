@@ -19,7 +19,8 @@ public static class CreateBuEndpoint
         .WithName("CreateBusinessUnit")
         .WithTags("BusinessUnits")
         .Produces(201)
-        .Produces(401);
+        .Produces(401)
+        .Produces(403);
     }
 }
 public record CreateBuRequest(string Name);
