@@ -12,7 +12,7 @@ public class ListStaffHandler(AppDbContext db)
             .Include(s => s.StaffBus)
             .Select(s => new StaffDto(
                 s.Id, s.FirstName, s.LastName, s.UserId,
-                s.StaffBus.Select(b => new StaffBuDto(b.BuId, b.Email))))
+                s.StaffBus.Select(b => new StaffBuDto(b.BuId, b.Bu.Name, b.Email))))
             .ToListAsync(ct);
     }
 }

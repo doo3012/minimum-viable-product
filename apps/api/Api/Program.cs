@@ -25,7 +25,8 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"))
+       .UseSnakeCaseNamingConvention());
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<JwtService>();

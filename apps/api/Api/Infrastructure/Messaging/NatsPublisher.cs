@@ -1,3 +1,4 @@
+using System.Text.Json;
 using NATS.Client.Core;
 using NATS.Client.JetStream;
 using NATS.Client.JetStream.Models;
@@ -17,6 +18,7 @@ public class NatsPublisher : INatsPublisher
 
     public async Task PublishAsync<T>(string subject, T payload, CancellationToken ct = default)
     {
-        await _js.PublishAsync(subject, payload, cancellationToken: ct);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(payload);
+        await _js.PublishAsync(subject, bytes, cancellationToken: ct);
     }
 }

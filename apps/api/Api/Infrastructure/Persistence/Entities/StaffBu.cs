@@ -7,4 +7,5 @@ public class StaffBu
     public Guid BuId { get; set; }
     public string Email { get; set; } = "";
     public DateTime CreatedAt { get; set; }
+    public BusinessUnit Bu { get; set; } = null!;
 }

@@ -2,6 +2,7 @@ using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
 using Api.Infrastructure.Persistence.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Companies.Onboard;
 
@@ -10,6 +11,10 @@ public class OnboardHandler(AppDbContext db, INatsPublisher nats)
 {
     public async Task<OnboardResult> Handle(OnboardCommand cmd, CancellationToken ct)
     {
+        var exists = await db.Companies.AnyAsync(c => c.Name == cmd.CompanyName, ct);
+        if (exists)
+            throw new InvalidOperationException($"Company '{cmd.CompanyName}' already exists.");
+
         // 1. Create company
         var company = new Company {
             Id = Guid.NewGuid(),

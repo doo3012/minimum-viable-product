@@ -19,7 +19,7 @@ interface StaffDetail {
   firstName: string;
   lastName: string;
   role: string;
-  buScoped: { buId: string; buName: string; email: string }[];
+  buAssignments: { buId: string; buName: string; email: string }[];
 }
 
 export default function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -137,7 +137,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {data.buScoped.map((row) => (
+              {data.buAssignments.map((row) => (
                 <BuScopedRow
                   key={row.buId}
                   row={row}

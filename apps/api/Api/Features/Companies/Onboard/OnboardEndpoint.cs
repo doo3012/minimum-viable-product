@@ -10,13 +10,19 @@ public static class OnboardEndpoint
             IMediator mediator,
             CancellationToken ct) =>
         {
-            var result = await mediator.Send(
-                new OnboardCommand(req.CompanyName, req.Address, req.ContactNumber), ct);
-            return Results.Ok(result);
+            try {
+                var result = await mediator.Send(
+                    new OnboardCommand(req.CompanyName, req.Address, req.ContactNumber), ct);
+                return Results.Ok(result);
+            }
+            catch (InvalidOperationException ex) {
+                return Results.Conflict(new { error = ex.Message });
+            }
         })
         .WithName("OnboardCompany")
         .WithTags("Companies")
-        .Produces<OnboardResult>(200);
+        .Produces<OnboardResult>(200)
+        .Produces(409);
     }
 }
 

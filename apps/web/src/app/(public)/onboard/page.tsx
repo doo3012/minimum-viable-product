@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 import { api } from '@/lib/api';
 import { onboardSchema, OnboardFormData } from '@/schemas/onboard.schema';
 
@@ -32,8 +33,12 @@ export default function OnboardPage() {
         confirmButtonText: 'Go to Login',
       }).then(() => router.push('/login'));
     },
-    onError: () => {
-      Swal.fire('Error', 'Onboarding failed. Please try again.', 'error');
+    onError: (err) => {
+      const message =
+        axios.isAxiosError(err) && err.response?.data?.error
+          ? err.response.data.error
+          : 'Onboarding failed. Please try again.';
+      Swal.fire('Error', message, 'error');
     },
   });
 

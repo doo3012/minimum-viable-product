@@ -50,7 +50,7 @@ function PermissionsContent({
 
   const { data: permissions, isLoading: loadingPerms } = useQuery<Permission[]>({
     queryKey: ['chat-permissions', buId],
-    queryFn: () => api.get(`/chat-permissions/bu/${buId}`).then((r) => r.data),
+    queryFn: () => api.get(`/business-units/${buId}/chat-permissions`).then((r) => r.data),
   });
 
   const grant = useMutation({
