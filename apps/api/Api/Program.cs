@@ -1,5 +1,6 @@
 // apps/api/Api/Program.cs
 using Api.Common.Behaviors;
+using Api.Common.Exceptions;
 using Api.Common.Jwt;
 using Api.Features.Auth.ChangePassword;
 using Api.Features.Auth.Login;
@@ -34,6 +35,7 @@ builder.Services.AddSingleton<INatsPublisher, NatsPublisher>();
 
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssemblyContaining<Program>();
+    cfg.AddOpenBehavior(typeof(AuthorizeBehavior<,>));
     cfg.AddOpenBehavior(typeof(TenantBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
@@ -66,6 +68,22 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    try { await next(); }
+    catch (ForbiddenException)
+    {
+        context.Response.StatusCode = 403;
+        await context.Response.WriteAsJsonAsync(new { error = "Forbidden" });
+    }
+    catch (KeyNotFoundException ex)
+    {
+        context.Response.StatusCode = 404;
+        await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+    }
+});
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 
