@@ -1,6 +1,7 @@
 using Api.Infrastructure.Persistence;
 using Api.Infrastructure.Persistence.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Staff.Create;
 
@@ -11,10 +12,15 @@ public class CreateStaffHandler(AppDbContext db)
     {
         // 1. Create User with auto-generated username
         var slug = $"{cmd.FirstName.ToLower()}.{cmd.LastName.ToLower()}";
+        var username = $"{slug}@staff";
+        var usernameExists = await db.Users.AnyAsync(u => u.Username == username, ct);
+        if (usernameExists)
+            throw new InvalidOperationException($"Username '{username}' already exists");
+
         var user = new User {
             Id = Guid.NewGuid(),
             CompanyId = cmd.CompanyId,
-            Username = $"{slug}@staff",
+            Username = username,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword($"Welcome@{cmd.FirstName}1"),
             Role = cmd.Role,
             MustChangePassword = true,

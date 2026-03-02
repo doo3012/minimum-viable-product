@@ -14,13 +14,22 @@ public static class CreateStaffEndpoint
             var cmd = new CreateStaffCommand(
                 req.FirstName, req.LastName, req.Role, req.BuId, req.Email)
             { CompanyId = companyId };
-            var id = await mediator.Send(cmd, ct);
-            return Results.Created($"/api/staff/{id}", new { id });
+            try
+            {
+                var id = await mediator.Send(cmd, ct);
+                return Results.Created($"/api/staff/{id}", new { id });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
         }).RequireAuthorization()
         .WithName("CreateStaff")
         .WithTags("Staff")
         .Produces(201)
-        .Produces(401);
+        .Produces(401)
+        .Produces(403)
+        .Produces(409);
     }
 }
 public record CreateStaffRequest(
