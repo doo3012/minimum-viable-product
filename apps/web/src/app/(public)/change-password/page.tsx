@@ -22,8 +22,8 @@ type FormData = z.infer<typeof schema>;
 
 export default function ChangePasswordPage() {
   const router = useRouter();
-  const setAuth = useAuthStore((s) => s.setAuth);
-  const { userId, role } = useAuthStore();
+  const { setAuth, setBuAssignments } = useAuthStore();
+  const { userId, globalRole } = useAuthStore();
 
   const {
     register,
@@ -34,11 +34,23 @@ export default function ChangePasswordPage() {
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
       api.post('/auth/change-password', { newPassword: data.newPassword }),
-    onSuccess: () => {
-      if (userId && role) setAuth(userId, role, false);
-      Swal.fire('Password updated!', 'You can now use your new password.', 'success').then(() =>
-        router.push('/dashboard')
-      );
+    onSuccess: async () => {
+      if (userId && globalRole) setAuth(userId, globalRole, false);
+      await Swal.fire('Password updated!', 'You can now use your new password.', 'success');
+
+      // Fetch BU assignments and redirect
+      try {
+        const buRes = await api.get('/staff/me/bu-assignments');
+        setBuAssignments(buRes.data);
+        const firstBu = buRes.data[0];
+        if (firstBu) {
+          router.push(`/bu/${firstBu.buId}/dashboard`);
+        } else {
+          router.push('/dashboard');
+        }
+      } catch {
+        router.push('/dashboard');
+      }
     },
     onError: () => {
       Swal.fire('Error', 'Failed to change password. Please try again.', 'error');

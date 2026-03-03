@@ -25,7 +25,7 @@ interface BusinessUnit {
 export default function NewStaffPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { role } = useAuthStore();
+  const { globalRole } = useAuthStore();
 
   const {
     register,
@@ -50,7 +50,7 @@ export default function NewStaffPage() {
     },
   });
 
-  if (role !== 'Owner' && role !== 'Admin') {
+  if (globalRole !== 'Owner' && globalRole !== 'Admin') {
     return <p className="text-red-500">Access denied. Only Owners and Admins can create staff.</p>;
   }
 

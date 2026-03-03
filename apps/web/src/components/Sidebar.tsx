@@ -13,7 +13,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { role, clearAuth } = useAuthStore();
+  const { globalRole, clearAuth } = useAuthStore();
 
   async function handleLogout() {
     try {
@@ -55,7 +55,7 @@ export function Sidebar() {
           </Link>
         ))}
 
-        {role === 'Owner' && (
+        {globalRole === 'Owner' && (
           <Link
             href="/chat-permissions"
             className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${

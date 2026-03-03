@@ -11,15 +11,15 @@ interface BusinessUnit {
 
 export default function ChatPermissionsIndexPage() {
   const router = useRouter();
-  const { role } = useAuthStore();
+  const { globalRole } = useAuthStore();
 
   const { data: bus, isLoading } = useQuery<BusinessUnit[]>({
     queryKey: ['business-units'],
     queryFn: () => api.get('/business-units').then((r) => r.data),
-    enabled: role === 'Owner',
+    enabled: globalRole === 'Owner',
   });
 
-  if (role !== 'Owner') {
+  if (globalRole !== 'Owner') {
     return <p className="text-red-500">Access denied. Only Owners can manage chat permissions.</p>;
   }
 

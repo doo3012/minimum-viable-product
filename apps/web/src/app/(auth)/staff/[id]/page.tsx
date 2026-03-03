@@ -27,7 +27,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const { id } = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { role } = useAuthStore();
+  const { globalRole } = useAuthStore();
   const [tab, setTab] = useState<'profile' | 'bu' | 'password'>('profile');
 
   const { data, isLoading } = useQuery<StaffDetail>({
@@ -103,7 +103,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             {t === 'profile' ? 'Global Profile' : 'BU-Scoped Data'}
           </button>
         ))}
-        {(role === 'Owner' || role === 'Admin') && (
+        {(globalRole === 'Owner' || globalRole === 'Admin') && (
           <button
             onClick={() => setTab('password')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${

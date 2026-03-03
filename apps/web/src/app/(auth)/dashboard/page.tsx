@@ -2,19 +2,19 @@
 import { useAuthStore } from '@/stores/authStore';
 
 export default function DashboardPage() {
-  const { role } = useAuthStore();
+  const { globalRole } = useAuthStore();
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Welcome back. You are signed in as {role ?? 'user'}.</p>
+        <p className="text-gray-500 mt-1">Welcome back. You are signed in as {globalRole ?? 'user'}.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard title="Business Units" description="Manage your company's business units" href="/business-units" />
         <StatCard title="Staff" description="View and manage staff members" href="/staff" />
-        {role === 'Owner' && (
+        {globalRole === 'Owner' && (
           <StatCard title="Chat Permissions" description="Control chat access per BU" href="/chat-permissions" />
         )}
       </div>

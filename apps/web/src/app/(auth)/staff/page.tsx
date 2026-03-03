@@ -25,7 +25,7 @@ const col = createColumnHelper<StaffMember>();
 
 export default function StaffPage() {
   const router = useRouter();
-  const { role } = useAuthStore();
+  const { globalRole } = useAuthStore();
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const { data, isLoading, isError } = useQuery<StaffMember[]>({
@@ -67,7 +67,7 @@ export default function StaffPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Staff</h1>
-        {role === 'Owner' && (
+        {globalRole === 'Owner' && (
           <button
             onClick={() => router.push('/staff/new')}
             className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"

@@ -10,7 +10,7 @@ import { loginSchema, LoginFormData } from '@/schemas/login.schema';
 
 export default function LoginPage() {
   const router = useRouter();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const { setAuth, setBuAssignments } = useAuthStore();
 
   const {
     register,
@@ -22,12 +22,27 @@ export default function LoginPage() {
 
   const mutation = useMutation({
     mutationFn: (data: LoginFormData) => api.post('/auth/login', data),
-    onSuccess: (res) => {
+    onSuccess: async (res) => {
       const { userId, role, mustChangePassword } = res.data;
-      setAuth(userId, role, mustChangePassword);
+      const globalRole = role === 'Owner' ? 'Owner' : 'User';
+      setAuth(userId, globalRole, mustChangePassword);
+
       if (mustChangePassword) {
         router.push('/change-password');
-      } else {
+        return;
+      }
+
+      // Fetch BU assignments
+      try {
+        const buRes = await api.get('/staff/me/bu-assignments');
+        setBuAssignments(buRes.data);
+        const firstBu = buRes.data[0];
+        if (firstBu) {
+          router.push(`/bu/${firstBu.buId}/dashboard`);
+        } else {
+          router.push('/dashboard');
+        }
+      } catch {
         router.push('/dashboard');
       }
     },

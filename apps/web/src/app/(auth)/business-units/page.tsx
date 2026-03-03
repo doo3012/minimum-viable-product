@@ -36,7 +36,7 @@ const columns = [
 
 export default function BusinessUnitsPage() {
   const router = useRouter();
-  const { role } = useAuthStore();
+  const { globalRole } = useAuthStore();
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const { data, isLoading, isError } = useQuery<BusinessUnit[]>({
@@ -57,7 +57,7 @@ export default function BusinessUnitsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Business Units</h1>
-        {(role === 'Owner' || role === 'Admin') && (
+        {(globalRole === 'Owner' || globalRole === 'Admin') && (
           <button
             onClick={() => router.push('/business-units/new')}
             className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"

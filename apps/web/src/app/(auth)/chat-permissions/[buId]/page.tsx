@@ -21,9 +21,9 @@ export default function ChatPermissionsPage({ params }: { params: Promise<{ buId
   const { buId } = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { role } = useAuthStore();
+  const { globalRole } = useAuthStore();
 
-  if (role !== 'Owner') {
+  if (globalRole !== 'Owner') {
     return (
       <div className="text-red-500">
         Access denied. Only Owners can manage chat permissions.
