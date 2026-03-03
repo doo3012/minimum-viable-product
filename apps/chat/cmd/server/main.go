@@ -9,8 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	deliveryhttp "github.com/trainheartnet/mvp-chat/internal/delivery/http"
-	natsinf "github.com/trainheartnet/mvp-chat/internal/infrastructure/nats"
 	"github.com/trainheartnet/mvp-chat/internal/infrastructure/postgres"
+	"github.com/trainheartnet/mvp-chat/internal/infrastructure/rabbitmq"
 	"github.com/trainheartnet/mvp-chat/internal/usecase"
 )
 
@@ -36,16 +36,12 @@ func main() {
 	memRepo := postgres.NewMemberRepo(pool)
 	wsUseCase := usecase.NewWorkspaceUseCase(wsRepo, memRepo)
 
-	// Start NATS consumer in background
-	natsURL := os.Getenv("NATS_URL")
-	if natsURL == "" {
-		natsURL = "nats://nats:4222"
+	// Start RabbitMQ consumer in background
+	rabbitmqURL := os.Getenv("RABBITMQ_URL")
+	if rabbitmqURL == "" {
+		rabbitmqURL = "amqp://guest:guest@rabbitmq:5672/"
 	}
-	go func() {
-		if err := natsinf.StartConsumer(ctx, natsURL, wsUseCase); err != nil {
-			log.Fatalf("NATS consumer failed: %v", err)
-		}
-	}()
+	rabbitmq.StartConsumer(rabbitmqURL, wsUseCase)
 
 	// Start HTTP server
 	e := echo.New()
