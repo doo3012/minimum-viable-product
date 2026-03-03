@@ -17,7 +17,18 @@ public class LoginHandler(AppDbContext db, JwtService jwt)
         if (!BCrypt.Net.BCrypt.Verify(cmd.Password, user.PasswordHash))
             throw new UnauthorizedAccessException("Invalid credentials");
 
+        var companyName = await db.Companies
+            .Where(c => c.Id == user.CompanyId)
+            .Select(c => c.Name)
+            .FirstOrDefaultAsync(ct) ?? "";
+
+        var staff = await db.StaffProfiles
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.UserId == user.Id, ct);
+
         var token = jwt.Generate(user.Id, user.CompanyId, user.Role);
-        return new LoginResult(token, user.MustChangePassword, user.Id, user.Role);
+        return new LoginResult(
+            token, user.MustChangePassword, user.Id, user.Role,
+            companyName, staff?.FirstName ?? "", staff?.LastName ?? "");
     }
 }

@@ -17,7 +17,8 @@ public static class LoginEndpoint
                     Expires = DateTimeOffset.UtcNow.AddHours(24)
                 });
                 return Results.Ok(new {
-                    result.UserId, result.Role, result.MustChangePassword
+                    result.UserId, result.Role, result.MustChangePassword,
+                    result.CompanyName, result.FirstName, result.LastName
                 });
             }
             catch (UnauthorizedAccessException) {
