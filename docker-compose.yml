@@ -76,6 +76,7 @@ services:
       DATABASE_URL: "postgres://postgres:postgres@postgres:5432/mvp"
       NATS_URL: "nats://nats:4222"
       RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      JWT_SECRET: "super-secret-key-at-least-32-chars-long!!"
       PORT: "8080"
     depends_on:
       postgres:

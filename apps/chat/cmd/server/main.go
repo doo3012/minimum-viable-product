@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	deliveryhttp "github.com/trainheartnet/mvp-chat/internal/delivery/http"
+	ws "github.com/trainheartnet/mvp-chat/internal/delivery/ws"
 	"github.com/trainheartnet/mvp-chat/internal/infrastructure/postgres"
 	"github.com/trainheartnet/mvp-chat/internal/infrastructure/rabbitmq"
 	"github.com/trainheartnet/mvp-chat/internal/usecase"
@@ -52,7 +53,8 @@ func main() {
 
 	handler := deliveryhttp.NewWorkspaceHandler(wsUseCase)
 	msgHandler := deliveryhttp.NewMessageHandler(msgUC)
-	deliveryhttp.RegisterRoutes(e, handler, msgHandler)
+	wsHandler := ws.NewWSHandler(msgUC, wsRepo, memRepo)
+	deliveryhttp.RegisterRoutes(e, handler, msgHandler, wsHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
