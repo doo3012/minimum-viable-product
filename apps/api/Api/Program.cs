@@ -20,6 +20,7 @@ using Api.Features.Staff.UpdateBuScoped;
 using Api.Infrastructure.Chat;
 using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
+using MassTransit;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,26 @@ builder.Services.AddMediatR(cfg => {
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// MassTransit with RabbitMQ + EF Core Outbox
+builder.Services.AddMassTransit(x =>
+{
+    x.AddEntityFrameworkOutbox<AppDbContext>(o =>
+    {
+        o.UsePostgres();
+        o.UseBusOutbox();
+    });
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["RabbitMQ:Host"] ?? "rabbitmq", "/", h =>
+        {
+            h.Username(builder.Configuration["RabbitMQ:Username"] ?? "guest");
+            h.Password(builder.Configuration["RabbitMQ:Password"] ?? "guest");
+        });
+        cfg.ConfigureEndpoints(context);
+    });
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt => {
@@ -120,8 +141,6 @@ app.MapSetPassword();
 app.MapGrantPermission();
 app.MapRevokePermission();
 app.MapListPermissionsByBu();
-
-await NatsStreamBootstrap.EnsureStreamAsync(app.Configuration);
 
 app.Run();
 

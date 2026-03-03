@@ -1,4 +1,5 @@
 using Api.Infrastructure.Persistence.Entities;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Infrastructure.Persistence;
@@ -42,5 +43,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne(sb => sb.Bu).WithMany().HasForeignKey(sb => sb.BuId);
         });
         modelBuilder.Entity<ChatPermission>(e => e.ToTable("chat_permissions"));
+
+        modelBuilder.AddTransactionalOutboxEntities();
     }
 }
