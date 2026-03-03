@@ -1,10 +1,16 @@
 'use client';
+
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
+
+interface BusinessUnit {
+  id: string;
+  name: string;
+}
 
 interface StaffMember {
   id: string;
@@ -17,32 +23,54 @@ interface Permission {
   staffId: string;
 }
 
-export default function ChatPermissionsPage({ params }: { params: Promise<{ buId: string }> }) {
-  const { buId } = use(params);
-  const router = useRouter();
-  const queryClient = useQueryClient();
+export default function AccessControlPage() {
   const { globalRole } = useAuthStore();
+  const [selectedBuId, setSelectedBuId] = useState<string | null>(null);
 
   if (globalRole !== 'Owner') {
-    return (
-      <div className="text-red-500">
-        Access denied. Only Owners can manage chat permissions.
-      </div>
-    );
+    return <p className="text-red-500">Access denied. Only Owners can manage access control.</p>;
   }
 
-  return <PermissionsContent buId={buId} queryClient={queryClient} router={router} />;
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-800">BU Access Control</h1>
+      <p className="text-gray-500">Select a business unit to manage chat access.</p>
+      {selectedBuId ? (
+        <PermissionsPanel buId={selectedBuId} onBack={() => setSelectedBuId(null)} />
+      ) : (
+        <BuCards onSelect={setSelectedBuId} />
+      )}
+    </div>
+  );
 }
 
-function PermissionsContent({
-  buId,
-  queryClient,
-  router,
-}: {
-  buId: string;
-  queryClient: ReturnType<typeof useQueryClient>;
-  router: ReturnType<typeof useRouter>;
-}) {
+function BuCards({ onSelect }: { onSelect: (buId: string) => void }) {
+  const { data: bus, isLoading } = useQuery<BusinessUnit[]>({
+    queryKey: ['business-units'],
+    queryFn: () => api.get('/business-units').then((r) => r.data),
+  });
+
+  if (isLoading) return <p className="text-gray-500">Loading...</p>;
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {bus?.map((bu) => (
+        <button
+          key={bu.id}
+          onClick={() => onSelect(bu.id)}
+          className="block text-left bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow"
+        >
+          <h2 className="text-base font-semibold text-gray-800">{bu.name}</h2>
+          <p className="text-sm text-gray-500 mt-1">Manage chat access &rarr;</p>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function PermissionsPanel({ buId, onBack }: { buId: string; onBack: () => void }) {
+  const queryClient = useQueryClient();
+
   const { data: staff, isLoading: loadingStaff } = useQuery<StaffMember[]>({
     queryKey: ['staff'],
     queryFn: () => api.get('/staff').then((r) => r.data),
@@ -81,21 +109,18 @@ function PermissionsContent({
     }
   }
 
-  if (loadingStaff || loadingPerms) return <p className="text-gray-500">Loading…</p>;
+  if (loadingStaff || loadingPerms) return <p className="text-gray-500">Loading...</p>;
 
   const permMap = new Map(permissions?.map((p) => [p.staffId, p]));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => router.push('/chat-permissions')}
-          className="text-gray-500 hover:text-gray-700 text-sm"
-        >
-          ← Back
-        </button>
-        <h1 className="text-2xl font-bold text-gray-800">Chat Permissions</h1>
-      </div>
+    <div className="space-y-4">
+      <button
+        onClick={onBack}
+        className="text-gray-500 hover:text-gray-700 text-sm"
+      >
+        &larr; Back to business units
+      </button>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <table className="min-w-full text-sm">

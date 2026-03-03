@@ -1,4 +1,5 @@
 'use client';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -74,14 +75,14 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     onError: () => Swal.fire('Error', 'Set password failed.', 'error'),
   });
 
-  if (isLoading) return <p className="text-gray-500">Loading…</p>;
+  if (isLoading) return <p className="text-gray-500">Loading...</p>;
   if (!data) return <p className="text-red-500">Staff member not found.</p>;
 
   return (
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-4">
         <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700 text-sm">
-          ← Back
+          &larr; Back
         </button>
         <h1 className="text-2xl font-bold text-gray-800">
           {data.firstName} {data.lastName}
@@ -149,7 +150,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             disabled={updateProfile.isPending}
             className="bg-blue-600 text-white px-5 py-2 rounded-md text-sm hover:bg-blue-700 disabled:opacity-50"
           >
-            {updateProfile.isPending ? 'Saving…' : 'Save Profile'}
+            {updateProfile.isPending ? 'Saving...' : 'Save Profile'}
           </button>
         </form>
       )}
@@ -189,7 +190,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
               disabled={resetPassword.isPending}
               className="bg-orange-500 text-white px-4 py-2 rounded-md text-sm hover:bg-orange-600 disabled:opacity-50"
             >
-              {resetPassword.isPending ? 'Resetting\u2026' : 'Reset Password'}
+              {resetPassword.isPending ? 'Resetting...' : 'Reset Password'}
             </button>
           </div>
           <hr />
@@ -304,7 +305,7 @@ function SetPasswordForm({ onSubmit, isPending }: { onSubmit: (pw: string) => vo
           disabled={isPending}
           className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 disabled:opacity-50"
         >
-          {isPending ? 'Setting\u2026' : 'Set Password'}
+          {isPending ? 'Setting...' : 'Set Password'}
         </button>
       </div>
     </div>

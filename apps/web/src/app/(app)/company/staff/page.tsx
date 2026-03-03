@@ -1,4 +1,5 @@
 'use client';
+
 import { useQuery } from '@tanstack/react-query';
 import {
   createColumnHelper,
@@ -23,10 +24,14 @@ interface StaffMember {
 
 const col = createColumnHelper<StaffMember>();
 
-export default function StaffPage() {
+export default function CompanyStaffPage() {
   const router = useRouter();
   const { globalRole } = useAuthStore();
   const [sorting, setSorting] = useState<SortingState>([]);
+
+  if (globalRole !== 'Owner') {
+    return <p className="text-red-500">Access denied. Only Owners can view the global staff directory.</p>;
+  }
 
   const { data, isLoading, isError } = useQuery<StaffMember[]>({
     queryKey: ['staff'],
@@ -45,7 +50,7 @@ export default function StaffPage() {
       header: 'Actions',
       cell: ({ row }) => (
         <button
-          onClick={() => router.push(`/staff/${row.original.id}`)}
+          onClick={() => router.push(`/company/staff/${row.original.id}`)}
           className="text-blue-600 hover:underline text-sm"
         >
           View
@@ -67,17 +72,15 @@ export default function StaffPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Staff</h1>
-        {globalRole === 'Owner' && (
-          <button
-            onClick={() => router.push('/staff/new')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
-          >
-            + New Staff
-          </button>
-        )}
+        <button
+          onClick={() => router.push('/company/staff/new')}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+        >
+          + New Staff
+        </button>
       </div>
 
-      {isLoading && <p className="text-gray-500">Loading…</p>}
+      {isLoading && <p className="text-gray-500">Loading...</p>}
       {isError && <p className="text-red-500">Failed to load staff.</p>}
 
       {data && (
@@ -94,9 +97,9 @@ export default function StaffPage() {
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {header.column.getIsSorted() === 'asc'
-                        ? ' ↑'
+                        ? ' \u2191'
                         : header.column.getIsSorted() === 'desc'
-                          ? ' ↓'
+                          ? ' \u2193'
                           : ''}
                     </th>
                   ))}

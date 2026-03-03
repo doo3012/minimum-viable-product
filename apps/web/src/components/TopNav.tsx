@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/stores/authStore';
 import { BuSwitcher } from './BuSwitcher';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 
 export function TopNav({ activeBuId }: { activeBuId?: string }) {
   const { clearAuth } = useAuthStore();

@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const PUBLIC_PATHS = ['/login', '/onboard', '/change-password'];
 
-export function middleware(req: NextRequest) {
-  const token = req.cookies.get('auth_token');
-  const isPublic = PUBLIC_PATHS.some((p) => req.nextUrl.pathname.startsWith(p));
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('auth_token')?.value;
+  const { pathname } = request.nextUrl;
+
+  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
   if (!token && !isPublic) {
-    return NextResponse.redirect(new URL('/login', req.url));
+    return NextResponse.redirect(new URL('/login', request.url));
   }
-  if (token && req.nextUrl.pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+
+  if (token && pathname === '/login') {
+    return NextResponse.redirect(new URL('/bu', request.url));
   }
+
   return NextResponse.next();
 }
 

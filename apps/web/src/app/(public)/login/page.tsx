@@ -40,10 +40,10 @@ export default function LoginPage() {
         if (firstBu) {
           router.push(`/bu/${firstBu.buId}/dashboard`);
         } else {
-          router.push('/dashboard');
+          router.push('/bu/management');
         }
       } catch {
-        router.push('/dashboard');
+        router.push('/bu/management');
       }
     },
     onError: () => {

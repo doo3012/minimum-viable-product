@@ -1,4 +1,5 @@
 'use client';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -43,15 +44,15 @@ export default function NewStaffPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['staff'] });
       await Swal.fire('Created!', 'Staff member has been added.', 'success');
-      router.push('/staff');
+      router.push('/company/staff');
     },
     onError: () => {
       Swal.fire('Error', 'Failed to create staff member.', 'error');
     },
   });
 
-  if (globalRole !== 'Owner' && globalRole !== 'Admin') {
-    return <p className="text-red-500">Access denied. Only Owners and Admins can create staff.</p>;
+  if (globalRole !== 'Owner') {
+    return <p className="text-red-500">Access denied. Only Owners can create staff.</p>;
   }
 
   return (
@@ -91,7 +92,7 @@ export default function NewStaffPage() {
             {...register('role')}
             className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Select role…</option>
+            <option value="">Select role...</option>
             <option value="Admin">Admin</option>
             <option value="Staff">Staff</option>
           </select>
@@ -106,7 +107,7 @@ export default function NewStaffPage() {
             {...register('buId')}
             className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Select BU…</option>
+            <option value="">Select BU...</option>
             {bus?.map((bu) => (
               <option key={bu.id} value={bu.id}>
                 {bu.name}
@@ -136,7 +137,7 @@ export default function NewStaffPage() {
             disabled={mutation.isPending}
             className="bg-blue-600 text-white px-5 py-2 rounded-md text-sm hover:bg-blue-700 disabled:opacity-50"
           >
-            {mutation.isPending ? 'Creating…' : 'Create'}
+            {mutation.isPending ? 'Creating...' : 'Create'}
           </button>
           <button
             type="button"
