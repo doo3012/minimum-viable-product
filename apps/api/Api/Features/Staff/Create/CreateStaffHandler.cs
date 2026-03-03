@@ -45,6 +45,7 @@ public class CreateStaffHandler(AppDbContext db)
             StaffId = profile.Id,
             BuId = cmd.BuId,
             Email = cmd.Email,
+            Role = cmd.BuRole ?? "Staff",
             CreatedAt = DateTime.UtcNow
         };
         db.StaffBus.Add(staffBu);

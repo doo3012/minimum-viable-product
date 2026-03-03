@@ -12,7 +12,7 @@ public static class CreateStaffEndpoint
         {
             var companyId = Guid.Parse(user.FindFirst("company_id")!.Value);
             var cmd = new CreateStaffCommand(
-                req.FirstName, req.LastName, req.Role, req.BuId, req.Email)
+                req.FirstName, req.LastName, req.Role, req.BuId, req.Email, req.BuRole)
             { CompanyId = companyId };
             try
             {
@@ -33,4 +33,4 @@ public static class CreateStaffEndpoint
     }
 }
 public record CreateStaffRequest(
-    string FirstName, string LastName, string Role, Guid BuId, string Email);
+    string FirstName, string LastName, string Role, Guid BuId, string Email, string? BuRole);

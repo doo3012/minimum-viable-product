@@ -14,6 +14,7 @@ using Api.Features.Staff.Create;
 using Api.Features.Staff.GetById;
 using Api.Features.Staff.List;
 using Api.Features.Staff.Me;
+using Api.Features.Staff.MyBuAssignments;
 using Api.Features.Staff.ResetPassword;
 using Api.Features.Staff.SetPassword;
 using Api.Features.Staff.UpdateBuScoped;
@@ -132,6 +133,7 @@ app.MapListBu();
 app.MapCreateStaff();
 app.MapListStaff();
 app.MapGetMyProfile();   // MUST be before MapGetStaff
+app.MapGetMyBuAssignments();
 app.MapGetStaff();
 app.MapUpdateBuScoped();
 app.MapResetPassword();

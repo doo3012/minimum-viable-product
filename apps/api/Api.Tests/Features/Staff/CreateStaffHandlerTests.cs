@@ -29,7 +29,7 @@ public class CreateStaffHandlerTests
         await db.SaveChangesAsync();
 
         var handler = new CreateStaffHandler(db);
-        var cmd = new CreateStaffCommand("Jane", "Doe", "Staff", buId, "jane@test.com")
+        var cmd = new CreateStaffCommand("Jane", "Doe", "Staff", buId, "jane@test.com", "Staff")
         {
             CompanyId = companyId
         };
