@@ -94,6 +94,7 @@ services:
       - "3000:3000"
     environment:
       API_URL: "http://api:5000"
+      CHAT_URL: "http://chat:8080"
       NODE_ENV: production
     depends_on:
       - api
