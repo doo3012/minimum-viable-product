@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS main.staff_bu (
   staff_id   UUID NOT NULL REFERENCES main.staff_profiles(id) ON DELETE CASCADE,
   bu_id      UUID NOT NULL REFERENCES main.business_units(id) ON DELETE CASCADE,
   email      TEXT NOT NULL,
+  role       TEXT NOT NULL DEFAULT 'Staff' CHECK (role IN ('Admin','Staff')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (staff_id, bu_id)
 );
