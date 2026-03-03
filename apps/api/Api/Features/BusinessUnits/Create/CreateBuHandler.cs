@@ -1,9 +1,10 @@
-using Api.Infrastructure.Messaging;
+using Api.Infrastructure.Messaging.Events;
 using Api.Infrastructure.Persistence;
 using Api.Infrastructure.Persistence.Entities;
+using MassTransit;
 using MediatR;
 namespace Api.Features.BusinessUnits.Create;
-public class CreateBuHandler(AppDbContext db, INatsPublisher nats)
+public class CreateBuHandler(AppDbContext db, IPublishEndpoint publishEndpoint)
     : IRequestHandler<CreateBuCommand, Guid>
 {
     public async Task<Guid> Handle(CreateBuCommand cmd, CancellationToken ct)
@@ -18,11 +19,8 @@ public class CreateBuHandler(AppDbContext db, INatsPublisher nats)
         db.BusinessUnits.Add(bu);
         await db.SaveChangesAsync(ct);
 
-        await nats.PublishAsync("bu.created", new {
-            bu_id = bu.Id, bu_name = bu.Name,
-            owner_user_id = cmd.UserId,
-            company_id = bu.CompanyId
-        }, ct);
+        await publishEndpoint.Publish(new BusinessUnitCreated(
+            bu.Id, bu.Name, cmd.UserId, bu.CompanyId), ct);
 
         return bu.Id;
     }

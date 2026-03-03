@@ -1,7 +1,7 @@
 using Api.Features.Companies.Onboard;
-using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
 using FluentAssertions;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
@@ -21,8 +21,8 @@ public class OnboardHandlerTests
     public async Task Handle_ValidCommand_CreatesCompanyBuAndOwner()
     {
         var db = CreateDb();
-        var publisher = Substitute.For<INatsPublisher>();
-        var handler = new OnboardHandler(db, publisher);
+        var publishEndpoint = Substitute.For<IPublishEndpoint>();
+        var handler = new OnboardHandler(db, publishEndpoint);
 
         var cmd = new OnboardCommand(
             CompanyName: "Acme Corp",

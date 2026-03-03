@@ -1,12 +1,13 @@
-using Api.Infrastructure.Messaging;
+using Api.Infrastructure.Messaging.Events;
 using Api.Infrastructure.Persistence;
 using Api.Infrastructure.Persistence.Entities;
+using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.Companies.Onboard;
 
-public class OnboardHandler(AppDbContext db, INatsPublisher nats)
+public class OnboardHandler(AppDbContext db, IPublishEndpoint publishEndpoint)
     : IRequestHandler<OnboardCommand, OnboardResult>
 {
     public async Task<OnboardResult> Handle(OnboardCommand cmd, CancellationToken ct)
@@ -73,12 +74,8 @@ public class OnboardHandler(AppDbContext db, INatsPublisher nats)
         await db.SaveChangesAsync(ct);
 
         // 5. Publish bu.created event
-        await nats.PublishAsync("bu.created", new {
-            bu_id = bu.Id,
-            bu_name = bu.Name,
-            owner_user_id = user.Id,
-            company_id = company.Id
-        }, ct);
+        await publishEndpoint.Publish(new BusinessUnitCreated(
+            bu.Id, bu.Name, user.Id, company.Id), ct);
 
         return new OnboardResult(company.Id, username, defaultPassword);
     }
