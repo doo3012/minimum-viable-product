@@ -22,8 +22,8 @@ type FormData = z.infer<typeof schema>;
 
 export default function ChangePasswordPage() {
   const router = useRouter();
-  const { setAuth, setBuAssignments } = useAuthStore();
-  const { userId, globalRole } = useAuthStore();
+  const store = useAuthStore();
+  const { setAuth, setBuAssignments, setActiveBuId } = store;
 
   const {
     register,
@@ -35,7 +35,10 @@ export default function ChangePasswordPage() {
     mutationFn: (data: FormData) =>
       api.post('/auth/change-password', { newPassword: data.newPassword }),
     onSuccess: async () => {
-      if (userId && globalRole) setAuth(userId, globalRole, false);
+      if (store.userId && store.globalRole) setAuth({
+        userId: store.userId, globalRole: store.globalRole, mustChangePassword: false,
+        companyName: store.companyName ?? '', firstName: store.firstName ?? '', lastName: store.lastName ?? '',
+      });
       await Swal.fire('Password updated!', 'You can now use your new password.', 'success');
 
       // Fetch BU assignments and redirect
@@ -44,12 +47,13 @@ export default function ChangePasswordPage() {
         setBuAssignments(buRes.data);
         const firstBu = buRes.data[0];
         if (firstBu) {
+          setActiveBuId(firstBu.buId);
           router.push(`/bu/${firstBu.buId}/dashboard`);
         } else {
-          router.push('/dashboard');
+          router.push('/bu/management');
         }
       } catch {
-        router.push('/dashboard');
+        router.push('/bu/management');
       }
     },
     onError: () => {
