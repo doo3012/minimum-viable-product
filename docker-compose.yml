@@ -26,6 +26,22 @@ services:
       - ./infra/nats/nats-server.conf:/etc/nats/nats-server.conf
       - nats_data:/data/jetstream
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
     build:
       context: ./apps/api
@@ -38,12 +54,17 @@ services:
       Jwt__Issuer: "mvp-api"
       Jwt__Audience: "mvp-web"
       Nats__Url: "nats://nats:4222"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Username: "guest"
+      RabbitMQ__Password: "guest"
       ASPNETCORE_ENVIRONMENT: Production
     depends_on:
       postgres:
         condition: service_healthy
       nats:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   chat:
     build:
@@ -54,12 +75,15 @@ services:
     environment:
       DATABASE_URL: "postgres://postgres:postgres@postgres:5432/mvp"
       NATS_URL: "nats://nats:4222"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
       PORT: "8080"
     depends_on:
       postgres:
         condition: service_healthy
       nats:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   web:
     build:
@@ -76,3 +100,4 @@ services:
 volumes:
   postgres_data:
   nats_data:
+  rabbitmq_data:
