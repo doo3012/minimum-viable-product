@@ -79,3 +79,15 @@ CREATE TABLE IF NOT EXISTS chat.workspace_members (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (workspace_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS chat.messages (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  workspace_id UUID NOT NULL REFERENCES chat.workspaces(id) ON DELETE CASCADE,
+  user_id      UUID NOT NULL,
+  display_name TEXT NOT NULL,
+  content      TEXT NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_workspace_created
+  ON chat.messages(workspace_id, created_at DESC);

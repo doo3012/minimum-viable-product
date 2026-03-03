@@ -31,10 +31,12 @@ func main() {
 	}
 	defer pool.Close()
 
-	// Wire repos and use case
+	// Wire repos and use cases
 	wsRepo := postgres.NewWorkspaceRepo(pool)
 	memRepo := postgres.NewMemberRepo(pool)
+	msgRepo := postgres.NewMessageRepo(pool)
 	wsUseCase := usecase.NewWorkspaceUseCase(wsRepo, memRepo)
+	msgUC := usecase.NewMessageUseCase(msgRepo, wsRepo)
 
 	// Start RabbitMQ consumer in background
 	rabbitmqURL := os.Getenv("RABBITMQ_URL")
@@ -49,7 +51,8 @@ func main() {
 	e.Use(middleware.Recover())
 
 	handler := deliveryhttp.NewWorkspaceHandler(wsUseCase)
-	deliveryhttp.RegisterRoutes(e, handler)
+	msgHandler := deliveryhttp.NewMessageHandler(msgUC)
+	deliveryhttp.RegisterRoutes(e, handler, msgHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
