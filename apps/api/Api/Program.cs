@@ -7,6 +7,7 @@ using Api.Features.Auth.Login;
 using Api.Features.BusinessUnits.Create;
 using Api.Features.BusinessUnits.List;
 using Api.Features.ChatPermissions.Grant;
+using Api.Features.ChatTokens.CreateChatToken;
 using Api.Features.ChatPermissions.ListByBu;
 using Api.Features.ChatPermissions.Revoke;
 using Api.Features.Companies.Onboard;
@@ -143,6 +144,9 @@ app.MapSetPassword();
 app.MapGrantPermission();
 app.MapRevokePermission();
 app.MapListPermissionsByBu();
+
+// Chat Tokens
+app.MapCreateChatToken();
 
 app.Run();
 
