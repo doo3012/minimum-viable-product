@@ -13,6 +13,9 @@ apps/web/node_modules/
 apps/web/.next/
 apps/web/.env.local
 
+# Worktrees
+.worktrees/
+
 # General
 *.env
 *.env.local
