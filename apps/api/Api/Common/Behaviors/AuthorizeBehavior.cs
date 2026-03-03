@@ -16,7 +16,7 @@ public class AuthorizeBehavior<TRequest, TResponse>(
         CancellationToken cancellationToken)
     {
         var role = httpContextAccessor.HttpContext?.User
-            .FindFirst("role")?.Value;
+            .FindFirst("global_role")?.Value;
 
         if (role == null || !request.AllowedRoles.Contains(role))
             throw new ForbiddenException();

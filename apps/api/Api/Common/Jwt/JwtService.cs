@@ -17,7 +17,7 @@ public class JwtService(IConfiguration config)
         {
             new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new Claim("company_id", companyId.ToString()),
-            new Claim("role", role),
+            new Claim("global_role", role == "Owner" ? "Owner" : "User"),
         };
 
         var token = new JwtSecurityToken(
