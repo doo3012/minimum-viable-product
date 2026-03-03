@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 
 export function TopNav({ activeBuId }: { activeBuId?: string }) {
-  const { clearAuth } = useAuthStore();
+  const { clearAuth, companyName, firstName, lastName } = useAuthStore();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -17,9 +17,14 @@ export function TopNav({ activeBuId }: { activeBuId?: string }) {
 
   return (
     <header className="h-14 bg-gray-900 text-white flex items-center justify-between px-6 border-b border-gray-700">
-      <div className="font-semibold text-lg">MVP Platform</div>
+      <div className="font-semibold text-lg">{companyName || 'MVP Platform'}</div>
       <BuSwitcher activeBuId={activeBuId} />
       <div className="flex items-center gap-4">
+        {firstName && (
+          <span className="text-sm text-gray-300">
+            {firstName} {lastName}
+          </span>
+        )}
         <button
           onClick={handleLogout}
           className="text-sm text-gray-300 hover:text-white transition"
