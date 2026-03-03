@@ -13,14 +13,18 @@ public class RevokePermissionHandler(AppDbContext db, IChatServiceClient chatCli
             .FirstOrDefaultAsync(p => p.Id == cmd.PermissionId, ct)
             ?? throw new KeyNotFoundException("Permission not found");
 
-        // Sync with Chat Service before removing
-        var staff = await db.StaffProfiles.FirstOrDefaultAsync(s => s.Id == permission.StaffId, ct);
-        if (staff?.UserId != null)
+        // Sync with Chat Service before removing (best-effort)
+        try
         {
-            var wsId = await chatClient.GetWorkspaceIdByBuIdAsync(permission.BuId, ct);
-            if (wsId.HasValue)
-                await chatClient.RemoveMemberAsync(wsId.Value, staff.UserId.Value, ct);
+            var staff = await db.StaffProfiles.FirstOrDefaultAsync(s => s.Id == permission.StaffId, ct);
+            if (staff?.UserId != null)
+            {
+                var wsId = await chatClient.GetWorkspaceIdByBuIdAsync(permission.BuId, ct);
+                if (wsId.HasValue)
+                    await chatClient.RemoveMemberAsync(wsId.Value, staff.UserId.Value, ct);
+            }
         }
+        catch (HttpRequestException) { /* Chat service unavailable */ }
 
         db.ChatPermissions.Remove(permission);
         await db.SaveChangesAsync(ct);

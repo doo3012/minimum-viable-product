@@ -27,10 +27,6 @@ export default function NewStaffPage() {
   const queryClient = useQueryClient();
   const { role } = useAuthStore();
 
-  if (role !== 'Owner' && role !== 'Admin') {
-    return <p className="text-red-500">Access denied. Only Owners and Admins can create staff.</p>;
-  }
-
   const {
     register,
     handleSubmit,
@@ -53,6 +49,10 @@ export default function NewStaffPage() {
       Swal.fire('Error', 'Failed to create staff member.', 'error');
     },
   });
+
+  if (role !== 'Owner' && role !== 'Admin') {
+    return <p className="text-red-500">Access denied. Only Owners and Admins can create staff.</p>;
+  }
 
   return (
     <div className="max-w-lg space-y-6">

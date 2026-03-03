@@ -24,14 +24,18 @@ public class GrantPermissionHandler(AppDbContext db, IChatServiceClient chatClie
         db.ChatPermissions.Add(permission);
         await db.SaveChangesAsync(ct);
 
-        // Sync with Chat Service
-        var staff = await db.StaffProfiles.FirstOrDefaultAsync(s => s.Id == cmd.StaffId, ct);
-        if (staff?.UserId != null)
+        // Sync with Chat Service (best-effort — don't fail the grant if chat is unreachable)
+        try
         {
-            var wsId = await chatClient.GetWorkspaceIdByBuIdAsync(cmd.BuId, ct);
-            if (wsId.HasValue)
-                await chatClient.AddMemberAsync(wsId.Value, staff.UserId.Value, ct);
+            var staff = await db.StaffProfiles.FirstOrDefaultAsync(s => s.Id == cmd.StaffId, ct);
+            if (staff?.UserId != null)
+            {
+                var wsId = await chatClient.GetWorkspaceIdByBuIdAsync(cmd.BuId, ct);
+                if (wsId.HasValue)
+                    await chatClient.AddMemberAsync(wsId.Value, staff.UserId.Value, ct);
+            }
         }
+        catch (HttpRequestException) { /* Chat service unavailable */ }
 
         return permission.Id;
     }

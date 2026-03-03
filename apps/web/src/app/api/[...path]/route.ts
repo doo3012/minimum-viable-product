@@ -36,7 +36,7 @@ async function proxy(req: NextRequest, params: { path: string[] }) {
     }
 
     return res;
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Upstream error' }, { status: 502 });
   }
 }

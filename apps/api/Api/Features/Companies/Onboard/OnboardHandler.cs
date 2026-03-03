@@ -50,9 +50,29 @@ public class OnboardHandler(AppDbContext db, INatsPublisher nats)
         };
         db.Users.Add(user);
 
+        // 4. Create Owner staff profile + assign to default BU
+        var staffProfile = new StaffProfile {
+            Id = Guid.NewGuid(),
+            CompanyId = company.Id,
+            UserId = user.Id,
+            FirstName = "Owner",
+            LastName = cmd.CompanyName,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.StaffProfiles.Add(staffProfile);
+
+        var staffBu = new StaffBu {
+            Id = Guid.NewGuid(),
+            StaffId = staffProfile.Id,
+            BuId = bu.Id,
+            Email = username,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.StaffBus.Add(staffBu);
+
         await db.SaveChangesAsync(ct);
 
-        // 4. Publish bu.created event
+        // 5. Publish bu.created event
         await nats.PublishAsync("bu.created", new {
             bu_id = bu.Id,
             bu_name = bu.Name,

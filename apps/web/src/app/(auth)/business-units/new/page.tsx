@@ -18,10 +18,6 @@ export default function NewBusinessUnitPage() {
   const queryClient = useQueryClient();
   const { role } = useAuthStore();
 
-  if (role !== 'Owner' && role !== 'Admin') {
-    return <p className="text-red-500">Access denied. Only Owners and Admins can create business units.</p>;
-  }
-
   const {
     register,
     handleSubmit,
@@ -39,6 +35,10 @@ export default function NewBusinessUnitPage() {
       Swal.fire('Error', 'Failed to create business unit.', 'error');
     },
   });
+
+  if (role !== 'Owner' && role !== 'Admin') {
+    return <p className="text-red-500">Access denied. Only Owners and Admins can create business units.</p>;
+  }
 
   return (
     <div className="max-w-lg space-y-6">
