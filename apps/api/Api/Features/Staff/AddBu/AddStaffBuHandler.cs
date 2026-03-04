@@ -14,12 +14,17 @@ public class AddStaffBuHandler(AppDbContext db) : IRequestHandler<AddStaffBuComm
         if (exists)
             throw new InvalidOperationException("Staff is already assigned to this BU");
 
+        var profile = await db.StaffProfiles
+            .Include(s => s.User)
+            .FirstOrDefaultAsync(s => s.Id == cmd.StaffId, ct)
+            ?? throw new InvalidOperationException("Staff not found");
+
         var staffBu = new StaffBu
         {
             Id = Guid.NewGuid(),
             StaffId = cmd.StaffId,
             BuId = cmd.BuId,
-            Email = "",
+            Email = profile.User?.Username ?? "",
             Role = "Staff",
             CreatedAt = DateTime.UtcNow
         };

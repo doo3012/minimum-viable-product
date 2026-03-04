@@ -26,7 +26,9 @@ async function proxy(req: NextRequest, params: { path: string[] }) {
       validateStatus: () => true,
     });
 
-    const res = NextResponse.json(response.data, { status: response.status });
+    const res = response.status === 204
+      ? new NextResponse(null, { status: 204 })
+      : NextResponse.json(response.data, { status: response.status });
 
     // Forward Set-Cookie headers (for login)
     const setCookie = response.headers['set-cookie'];
@@ -36,7 +38,8 @@ async function proxy(req: NextRequest, params: { path: string[] }) {
     }
 
     return res;
-  } catch {
+  } catch (err: any) {
+    console.error('PROXY ERROR:', err);
     return NextResponse.json({ error: 'Upstream error' }, { status: 502 });
   }
 }

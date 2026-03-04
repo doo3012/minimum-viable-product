@@ -108,8 +108,9 @@ export default function NewStaffPage() {
       });
       router.push('/company/staff');
     },
-    onError: (err: Error) => {
-      Swal.fire('Error', err.message || 'Failed to create staff member.', 'error');
+    onError: (err: any) => {
+      const message = err.response?.data?.error || err.message || 'Failed to create staff member.';
+      Swal.fire('Error', message, 'error');
     },
   });
 
@@ -225,14 +226,12 @@ export default function NewStaffPage() {
                       <button
                         type="button"
                         onClick={() => handleToggleChat(bu.buId)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          bu.chatAccess ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${bu.chatAccess ? 'bg-green-500' : 'bg-gray-300'
+                          }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            bu.chatAccess ? 'translate-x-6' : 'translate-x-1'
-                          }`}
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${bu.chatAccess ? 'translate-x-6' : 'translate-x-1'
+                            }`}
                         />
                       </button>
                     </td>
