@@ -3,10 +3,12 @@ package http
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/trainheartnet/mvp-chat/internal/domain"
+	jwtutil "github.com/trainheartnet/mvp-chat/internal/infrastructure/jwt"
 	"github.com/trainheartnet/mvp-chat/internal/usecase"
 )
 
@@ -25,6 +27,14 @@ func (h *MessageHandler) GetHistory(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid bu_id"})
 	}
 
+	// Extract user ID from Authorization header (chat JWT)
+	userID := uuid.Nil
+	if auth := c.Request().Header.Get("Authorization"); strings.HasPrefix(auth, "Bearer ") {
+		if claims, err := jwtutil.ValidateChatToken(strings.TrimPrefix(auth, "Bearer ")); err == nil {
+			userID, _ = uuid.Parse(claims.Sub)
+		}
+	}
+
 	limitStr := c.QueryParam("limit")
 	limit := 50
 	if limitStr != "" {
@@ -33,7 +43,7 @@ func (h *MessageHandler) GetHistory(c echo.Context) error {
 		}
 	}
 
-	messages, err := h.uc.GetHistory(c.Request().Context(), buID, limit)
+	messages, err := h.uc.GetHistory(c.Request().Context(), buID, userID, limit)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/authStore';
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required').max(100),
   lastName: z.string().min(1, 'Last name is required').max(100),
+  email: z.string().min(1, 'Email is required').email('Invalid email format'),
   role: z.enum(['Admin', 'Staff'], { message: 'Role is required' }),
 });
 type FormData = z.infer<typeof schema>;
@@ -79,7 +80,6 @@ export default function NewStaffPage() {
       const res = await api.post('/staff', {
         ...formData,
         buId: firstBu.buId,
-        email: '',
       });
       const staffId = res.data.id;
 
@@ -148,6 +148,17 @@ export default function NewStaffPage() {
                 <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>
               )}
             </div>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700">Email (used as login username)</label>
+            <input
+              {...register('email')}
+              type="email"
+              className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Role</label>

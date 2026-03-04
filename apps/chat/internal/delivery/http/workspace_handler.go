@@ -2,9 +2,11 @@ package http
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	jwtutil "github.com/trainheartnet/mvp-chat/internal/infrastructure/jwt"
 	"github.com/trainheartnet/mvp-chat/internal/usecase"
 )
 
@@ -33,9 +35,18 @@ func (h *WorkspaceHandler) GetWorkspaceByBuID(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid bu_id")
 	}
-	ws, err := h.uc.GetByBuID(c.Request().Context(), buID)
+
+	// Extract user ID from Authorization header for auto-provisioning
+	userID := uuid.Nil
+	if auth := c.Request().Header.Get("Authorization"); strings.HasPrefix(auth, "Bearer ") {
+		if claims, err := jwtutil.ValidateChatToken(strings.TrimPrefix(auth, "Bearer ")); err == nil {
+			userID, _ = uuid.Parse(claims.Sub)
+		}
+	}
+
+	ws, err := h.uc.EnsureWorkspace(c.Request().Context(), buID, userID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, "workspace not found")
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get workspace")
 	}
 	return c.JSON(http.StatusOK, ws)
 }

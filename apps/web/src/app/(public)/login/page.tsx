@@ -36,16 +36,19 @@ export default function LoginPage() {
       try {
         const buRes = await api.get('/staff/me/bu-assignments');
         setBuAssignments(buRes.data);
-        if (buRes.data.length > 1) {
+
+        if (globalRole === 'Owner') {
+          router.push('/bu/management');
+        } else if (buRes.data.length > 1) {
           router.push('/bu/dashboard');
         } else if (buRes.data.length === 1) {
           setActiveBuId(buRes.data[0].buId);
           router.push(`/bu/${buRes.data[0].buId}/staff`);
         } else {
-          router.push(globalRole === 'Owner' ? '/bu/management' : '/login');
+          router.push('/login');
         }
       } catch {
-        router.push('/bu/management');
+        router.push(globalRole === 'Owner' ? '/bu/management' : '/login');
       }
     },
     onError: () => {

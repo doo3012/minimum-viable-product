@@ -8,8 +8,6 @@ public class ListStaffHandler(AppDbContext db)
 {
     public async Task<IEnumerable<StaffDto>> Handle(ListStaffQuery query, CancellationToken ct)
     {
-        var chatPermissions = await db.ChatPermissions.ToListAsync(ct);
-
         return await db.StaffProfiles
             .Include(s => s.User)
             .Include(s => s.StaffBus).ThenInclude(sb => sb.Bu)
@@ -19,7 +17,7 @@ public class ListStaffHandler(AppDbContext db)
                 s.StaffBus.Count,
                 s.StaffBus.Select(b => new StaffBuDto(
                     b.BuId, b.Bu.Name, b.Email,
-                    chatPermissions.Any(cp => cp.StaffId == s.Id && cp.BuId == b.BuId)))))
+                    db.ChatPermissions.Any(cp => cp.StaffId == s.Id && cp.BuId == b.BuId)))))
             .ToListAsync(ct);
     }
 }

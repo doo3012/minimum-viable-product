@@ -37,8 +37,7 @@ public class OnboardHandler(AppDbContext db, IPublishEndpoint publishEndpoint)
         db.BusinessUnits.Add(bu);
 
         // 3. Create Owner account
-        var slug = cmd.CompanyName.ToLower().Replace(" ", "");
-        var username = $"owner@{slug}";
+        var username = cmd.Email;
         var defaultPassword = $"Welcome@{cmd.CompanyName.Replace(" ", "")}1";
         var user = new User {
             Id = Guid.NewGuid(),
@@ -56,8 +55,8 @@ public class OnboardHandler(AppDbContext db, IPublishEndpoint publishEndpoint)
             Id = Guid.NewGuid(),
             CompanyId = company.Id,
             UserId = user.Id,
-            FirstName = "Owner",
-            LastName = cmd.CompanyName,
+            FirstName = cmd.FirstName,
+            LastName = cmd.LastName,
             CreatedAt = DateTime.UtcNow
         };
         db.StaffProfiles.Add(staffProfile);
@@ -66,7 +65,7 @@ public class OnboardHandler(AppDbContext db, IPublishEndpoint publishEndpoint)
             Id = Guid.NewGuid(),
             StaffId = staffProfile.Id,
             BuId = bu.Id,
-            Email = username,
+            Email = cmd.Email,
             CreatedAt = DateTime.UtcNow
         };
         db.StaffBus.Add(staffBu);

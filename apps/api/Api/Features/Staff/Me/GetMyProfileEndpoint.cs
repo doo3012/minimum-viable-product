@@ -11,14 +11,14 @@ public static class GetMyProfileEndpoint
         {
             var userId = Guid.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? user.FindFirst("sub")!.Value);
-            var staffId = await mediator.Send(new GetMyProfileQuery(userId), ct);
-            if (staffId is null) return Results.NotFound();
-            return Results.Ok(new { staffId });
+            var result = await mediator.Send(new GetMyProfileQuery(userId), ct);
+            if (result is null) return Results.NotFound();
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .WithName("GetMyProfile")
         .WithTags("Staff")
-        .Produces(200)
+        .Produces<MyProfileDto>(200)
         .Produces(404)
         .Produces(401);
     }

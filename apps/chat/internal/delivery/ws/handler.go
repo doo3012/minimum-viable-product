@@ -13,7 +13,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/trainheartnet/mvp-chat/internal/domain"
 	jwtutil "github.com/trainheartnet/mvp-chat/internal/infrastructure/jwt"
-	"github.com/trainheartnet/mvp-chat/internal/repository"
 	"github.com/trainheartnet/mvp-chat/internal/usecase"
 )
 
@@ -26,19 +25,17 @@ var upgrader = websocket.Upgrader{
 }
 
 type WSHandler struct {
-	mu      sync.RWMutex
-	hubs    map[uuid.UUID]*Hub
-	msgUC   *usecase.MessageUseCase
-	wsRepo  repository.WorkspaceRepository
-	memRepo repository.MemberRepository
+	mu    sync.RWMutex
+	hubs  map[uuid.UUID]*Hub
+	msgUC *usecase.MessageUseCase
+	wsUC  usecase.WorkspaceUseCase
 }
 
-func NewWSHandler(msgUC *usecase.MessageUseCase, wsRepo repository.WorkspaceRepository, memRepo repository.MemberRepository) *WSHandler {
+func NewWSHandler(msgUC *usecase.MessageUseCase, wsUC usecase.WorkspaceUseCase) *WSHandler {
 	return &WSHandler{
-		hubs:    make(map[uuid.UUID]*Hub),
-		msgUC:   msgUC,
-		wsRepo:  wsRepo,
-		memRepo: memRepo,
+		hubs:  make(map[uuid.UUID]*Hub),
+		msgUC: msgUC,
+		wsUC:  wsUC,
 	}
 }
 
@@ -90,14 +87,14 @@ func (h *WSHandler) HandleWS(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, map[string]string{"error": "token bu_id mismatch"})
 	}
 
-	// Verify workspace exists and user is a member
-	ws, err := h.wsRepo.GetByBuID(c.Request().Context(), buID)
-	if err != nil {
-		return c.JSON(http.StatusNotFound, map[string]string{"error": "workspace not found"})
-	}
-
 	userID, _ := uuid.Parse(claims.Sub)
-	members, err := h.memRepo.ListByWorkspace(c.Request().Context(), ws.ID)
+
+	// Ensure workspace exists (auto-provision if missing)
+	ws, err := h.wsUC.EnsureWorkspace(c.Request().Context(), buID, userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to get workspace"})
+	}
+	members, err := h.wsUC.ListMembers(c.Request().Context(), ws.ID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to check membership"})
 	}
@@ -110,7 +107,10 @@ func (h *WSHandler) HandleWS(c echo.Context) error {
 		}
 	}
 	if !isMember {
-		return c.JSON(http.StatusForbidden, map[string]string{"error": "not a workspace member"})
+		// Auto-add user as member (they have a valid chat token for this BU)
+		if err := h.wsUC.AddMember(c.Request().Context(), ws.ID, userID); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to add member"})
+		}
 	}
 
 	// Upgrade to WebSocket

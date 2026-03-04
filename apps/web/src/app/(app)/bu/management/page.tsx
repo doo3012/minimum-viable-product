@@ -37,13 +37,10 @@ export default function BuManagementPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [showForm, setShowForm] = useState(false);
 
-  if (globalRole !== 'Owner') {
-    return <p className="text-red-500">Access denied. Only Owners can manage business units.</p>;
-  }
-
   const { data, isLoading, isError } = useQuery<BusinessUnit[]>({
     queryKey: ['business-units'],
     queryFn: () => api.get('/business-units').then((r) => r.data),
+    enabled: globalRole === 'Owner',
   });
 
   const {
@@ -93,6 +90,10 @@ export default function BuManagementPage() {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
+
+  if (globalRole !== 'Owner') {
+    return <p className="text-red-500">Access denied. Only Owners can manage business units.</p>;
+  }
 
   return (
     <div className="space-y-6">

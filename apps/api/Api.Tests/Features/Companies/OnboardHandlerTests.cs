@@ -27,12 +27,15 @@ public class OnboardHandlerTests
         var cmd = new OnboardCommand(
             CompanyName: "Acme Corp",
             Address: "123 Main St",
-            ContactNumber: "0812345678");
+            ContactNumber: "0812345678",
+            FirstName: "John",
+            LastName: "Doe",
+            Email: "john@acme.com");
 
         var result = await handler.Handle(cmd, CancellationToken.None);
 
         result.Should().NotBeNull();
-        result.Username.Should().Be("owner@acmecorp");
+        result.Username.Should().Be("john@acme.com");
 
         (await db.Companies.CountAsync()).Should().Be(1);
         (await db.BusinessUnits.CountAsync()).Should().Be(1);

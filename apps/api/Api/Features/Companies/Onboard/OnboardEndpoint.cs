@@ -12,7 +12,7 @@ public static class OnboardEndpoint
         {
             try {
                 var result = await mediator.Send(
-                    new OnboardCommand(req.CompanyName, req.Address, req.ContactNumber), ct);
+                    new OnboardCommand(req.CompanyName, req.Address, req.ContactNumber, req.FirstName, req.LastName, req.Email), ct);
                 return Results.Ok(result);
             }
             catch (InvalidOperationException ex) {
@@ -26,4 +26,4 @@ public static class OnboardEndpoint
     }
 }
 
-public record OnboardRequest(string CompanyName, string Address, string ContactNumber);
+public record OnboardRequest(string CompanyName, string Address, string ContactNumber, string FirstName, string LastName, string Email);

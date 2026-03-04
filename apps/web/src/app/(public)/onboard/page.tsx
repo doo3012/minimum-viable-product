@@ -24,6 +24,9 @@ export default function OnboardPage() {
         companyName: data.companyName,
         address: data.address,
         contactNumber: data.contactNumber,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
       }),
     onSuccess: (res) => {
       Swal.fire({
@@ -80,6 +83,44 @@ export default function OnboardPage() {
           />
           {errors.contactNumber && (
             <p className="text-red-500 text-xs mt-1">{errors.contactNumber.message}</p>
+          )}
+        </div>
+
+        <hr className="border-gray-200" />
+        <h2 className="text-lg font-semibold text-gray-800">Owner Information</h2>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">First Name</label>
+            <input
+              {...register('firstName')}
+              className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.firstName && (
+              <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Last Name</label>
+            <input
+              {...register('lastName')}
+              className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.lastName && (
+              <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Email (used as login username)</label>
+          <input
+            {...register('email')}
+            type="email"
+            className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {errors.email && (
+            <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
           )}
         </div>
 

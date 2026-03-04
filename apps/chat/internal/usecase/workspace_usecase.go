@@ -11,6 +11,7 @@ import (
 
 type WorkspaceUseCase interface {
 	Provision(ctx context.Context, buID uuid.UUID, name string, ownerID uuid.UUID) error
+	EnsureWorkspace(ctx context.Context, buID uuid.UUID, userID uuid.UUID) (*domain.Workspace, error)
 	AddMember(ctx context.Context, workspaceID, userID uuid.UUID) error
 	RemoveMember(ctx context.Context, workspaceID, userID uuid.UUID) error
 	ListMembers(ctx context.Context, workspaceID uuid.UUID) ([]*domain.WorkspaceMember, error)
@@ -62,5 +63,19 @@ func (uc *workspaceUseCase) GetByID(ctx context.Context, id uuid.UUID) (*domain.
 }
 
 func (uc *workspaceUseCase) GetByBuID(ctx context.Context, buID uuid.UUID) (*domain.Workspace, error) {
+	return uc.wsRepo.GetByBuID(ctx, buID)
+}
+
+// EnsureWorkspace returns the workspace for a BU, auto-provisioning it if it doesn't exist yet.
+func (uc *workspaceUseCase) EnsureWorkspace(ctx context.Context, buID uuid.UUID, userID uuid.UUID) (*domain.Workspace, error) {
+	ws, err := uc.wsRepo.GetByBuID(ctx, buID)
+	if err == nil {
+		return ws, nil
+	}
+
+	// Auto-provision: workspace doesn't exist for this BU
+	if provErr := uc.Provision(ctx, buID, "Chat", userID); provErr != nil {
+		return nil, provErr
+	}
 	return uc.wsRepo.GetByBuID(ctx, buID)
 }

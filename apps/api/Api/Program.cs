@@ -11,6 +11,7 @@ using Api.Features.ChatTokens.CreateChatToken;
 using Api.Features.ChatPermissions.ListByBu;
 using Api.Features.ChatPermissions.Revoke;
 using Api.Features.Companies.Onboard;
+using Api.Features.Companies.Settings;
 using Api.Features.Staff.Create;
 using Api.Features.Staff.GetById;
 using Api.Features.Staff.List;
@@ -138,6 +139,7 @@ app.MapListBu();
 app.MapCreateStaff();
 app.MapListStaff();
 app.MapGetMyProfile();   // MUST be before MapGetStaff
+app.MapUpdateMyProfile();
 app.MapGetMyBuAssignments();
 app.MapGetStaff();
 app.MapUpdateBuScoped();
@@ -147,6 +149,10 @@ app.MapDeleteStaff();
 app.MapUpdateStaffProfile();
 app.MapAddStaffBu();
 app.MapRemoveStaffBu();
+
+// Company Settings
+app.MapGetCompanySettings();
+app.MapUpdateCompanySettings();
 
 // Chat Permissions
 app.MapGrantPermission();

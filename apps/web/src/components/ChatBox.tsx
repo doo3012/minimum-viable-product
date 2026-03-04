@@ -17,19 +17,21 @@ export function ChatBox({ buId }: { buId: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let ws: WebSocket;
+    let ws: WebSocket | undefined;
+    let cancelled = false;
 
     const connect = async () => {
       // 1. Fetch history
       try {
         const historyRes = await api.get(`/chat/messages?buId=${buId}`);
-        setMessages(historyRes.data ?? []);
-      } catch (err) {
-        console.error('Failed to fetch chat history:', err);
+        if (!cancelled) setMessages(historyRes.data ?? []);
+      } catch {
+        // History unavailable — not critical
       }
 
       // 2. Get chat token
@@ -37,30 +39,37 @@ export function ChatBox({ buId }: { buId: string }) {
       try {
         const tokenRes = await api.post('/chat/token', { buId });
         chatToken = tokenRes.data.token;
-      } catch (err) {
-        console.error('Failed to get chat token:', err);
+      } catch {
+        if (!cancelled) setError('Chat service is unavailable.');
         return;
       }
 
       // 3. Connect WebSocket
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      const wsHost =
-        process.env.NEXT_PUBLIC_CHAT_WS_URL ||
-        `${wsProtocol}://${window.location.hostname}:8080`;
-      ws = new WebSocket(`${wsHost}/ws?token=${chatToken}&buId=${buId}`);
-      wsRef.current = ws;
+      try {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsHost =
+          process.env.NEXT_PUBLIC_CHAT_WS_URL ||
+          `${wsProtocol}://${window.location.hostname}:8080`;
+        ws = new WebSocket(`${wsHost}/ws?token=${chatToken}&buId=${buId}`);
+        wsRef.current = ws;
 
-      ws.onopen = () => setConnected(true);
-      ws.onclose = () => setConnected(false);
-      ws.onmessage = (event) => {
-        const msg: ChatMessage = JSON.parse(event.data);
-        setMessages((prev) => [...prev, msg]);
-      };
+        ws.onopen = () => { if (!cancelled) setConnected(true); };
+        ws.onclose = () => { if (!cancelled) setConnected(false); };
+        ws.onerror = () => { if (!cancelled) setError('Chat service is unavailable.'); };
+        ws.onmessage = (event) => {
+          if (cancelled) return;
+          const msg: ChatMessage = JSON.parse(event.data);
+          setMessages((prev) => [...prev, msg]);
+        };
+      } catch {
+        if (!cancelled) setError('Chat service is unavailable.');
+      }
     };
 
     connect();
 
     return () => {
+      cancelled = true;
       ws?.close();
     };
   }, [buId]);
@@ -82,6 +91,14 @@ export function ChatBox({ buId }: { buId: string }) {
       sendMessage();
     }
   };
+
+  if (error) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-12rem)] bg-white rounded-lg border border-gray-200 items-center justify-center">
+        <p className="text-gray-500">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)] bg-white rounded-lg border border-gray-200">

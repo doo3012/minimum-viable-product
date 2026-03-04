@@ -10,15 +10,15 @@ import (
 
 type MessageUseCase struct {
 	msgRepo repository.MessageRepository
-	wsRepo  repository.WorkspaceRepository
+	wsUC    WorkspaceUseCase
 }
 
-func NewMessageUseCase(msgRepo repository.MessageRepository, wsRepo repository.WorkspaceRepository) *MessageUseCase {
-	return &MessageUseCase{msgRepo: msgRepo, wsRepo: wsRepo}
+func NewMessageUseCase(msgRepo repository.MessageRepository, wsUC WorkspaceUseCase) *MessageUseCase {
+	return &MessageUseCase{msgRepo: msgRepo, wsUC: wsUC}
 }
 
-func (uc *MessageUseCase) GetHistory(ctx context.Context, buID uuid.UUID, limit int) ([]*domain.Message, error) {
-	ws, err := uc.wsRepo.GetByBuID(ctx, buID)
+func (uc *MessageUseCase) GetHistory(ctx context.Context, buID uuid.UUID, userID uuid.UUID, limit int) ([]*domain.Message, error) {
+	ws, err := uc.wsUC.EnsureWorkspace(ctx, buID, userID)
 	if err != nil {
 		return nil, err
 	}

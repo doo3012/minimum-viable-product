@@ -7,10 +7,10 @@ import (
 )
 
 type Message struct {
-	ID          uuid.UUID
-	WorkspaceID uuid.UUID
-	UserID      uuid.UUID
-	DisplayName string
-	Content     string
-	CreatedAt   time.Time
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspaceId"`
+	UserID      uuid.UUID `json:"userId"`
+	DisplayName string    `json:"displayName"`
+	Content     string    `json:"content"`
+	CreatedAt   time.Time `json:"createdAt"`
 }

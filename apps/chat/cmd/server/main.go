@@ -37,7 +37,7 @@ func main() {
 	memRepo := postgres.NewMemberRepo(pool)
 	msgRepo := postgres.NewMessageRepo(pool)
 	wsUseCase := usecase.NewWorkspaceUseCase(wsRepo, memRepo)
-	msgUC := usecase.NewMessageUseCase(msgRepo, wsRepo)
+	msgUC := usecase.NewMessageUseCase(msgRepo, wsUseCase)
 
 	// Start RabbitMQ consumer in background
 	rabbitmqURL := os.Getenv("RABBITMQ_URL")
@@ -53,7 +53,7 @@ func main() {
 
 	handler := deliveryhttp.NewWorkspaceHandler(wsUseCase)
 	msgHandler := deliveryhttp.NewMessageHandler(msgUC)
-	wsHandler := ws.NewWSHandler(msgUC, wsRepo, memRepo)
+	wsHandler := ws.NewWSHandler(msgUC, wsUseCase)
 	deliveryhttp.RegisterRoutes(e, handler, msgHandler, wsHandler)
 
 	port := os.Getenv("PORT")
