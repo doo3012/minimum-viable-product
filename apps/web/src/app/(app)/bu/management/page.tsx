@@ -32,7 +32,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function BuManagementPage() {
-  const { globalRole } = useAuthStore();
+  const { globalRole, setBuAssignments } = useAuthStore();
   const queryClient = useQueryClient();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [showForm, setShowForm] = useState(false);
@@ -57,6 +57,13 @@ export default function BuManagementPage() {
     mutationFn: (formData: FormData) => api.post('/business-units', formData),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['business-units'] });
+
+      // Refresh BU assignments so BuSwitcher updates immediately
+      try {
+        const buRes = await api.get('/staff/me/bu-assignments');
+        setBuAssignments(buRes.data);
+      } catch {}
+
       await Swal.fire('Created!', 'Business unit has been created.', 'success');
       reset();
       setShowForm(false);
@@ -69,8 +76,8 @@ export default function BuManagementPage() {
   const columns = [
     col.accessor('name', { header: 'Name' }),
     col.accessor('isDefault', {
-      header: 'Default',
-      cell: (info) => (info.getValue() ? 'Yes' : '\u2014'),
+      header: 'Type',
+      cell: (info) => (info.getValue() ? 'Head Quarter' : '\u2014'),
     }),
     col.accessor('createdAt', {
       header: 'Created At',
