@@ -18,7 +18,9 @@ using Api.Features.Staff.Me;
 using Api.Features.Staff.MyBuAssignments;
 using Api.Features.Staff.ResetPassword;
 using Api.Features.Staff.SetPassword;
+using Api.Features.Staff.AddBu;
 using Api.Features.Staff.Delete;
+using Api.Features.Staff.RemoveBu;
 using Api.Features.Staff.UpdateBuScoped;
 using Api.Features.Staff.UpdateProfile;
 using Api.Infrastructure.Chat;
@@ -143,6 +145,8 @@ app.MapResetPassword();
 app.MapSetPassword();
 app.MapDeleteStaff();
 app.MapUpdateStaffProfile();
+app.MapAddStaffBu();
+app.MapRemoveStaffBu();
 
 // Chat Permissions
 app.MapGrantPermission();
