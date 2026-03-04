@@ -1,11 +1,10 @@
 'use client';
 
 import { useAuthStore } from '@/stores/authStore';
-import { BuSwitcher } from './BuSwitcher';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 
-export function TopNav({ activeBuId }: { activeBuId?: string }) {
+export function TopNav() {
   const { clearAuth, companyName, firstName, lastName } = useAuthStore();
   const router = useRouter();
 
@@ -18,7 +17,6 @@ export function TopNav({ activeBuId }: { activeBuId?: string }) {
   return (
     <header className="h-14 bg-gray-900 text-white flex items-center justify-between px-6 border-b border-gray-700">
       <div className="font-semibold text-lg">{companyName || 'MVP Platform'}</div>
-      <BuSwitcher activeBuId={activeBuId} />
       <div className="flex items-center gap-4">
         {firstName && (
           <span className="text-sm text-gray-300">
