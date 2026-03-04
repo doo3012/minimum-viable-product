@@ -58,7 +58,7 @@ export default function BuManagementPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['business-units'] });
 
-      // Refresh BU assignments so BuSwitcher updates immediately
+      // Refresh BU assignments so sidebar updates immediately
       try {
         const buRes = await api.get('/staff/me/bu-assignments');
         setBuAssignments(buRes.data);
