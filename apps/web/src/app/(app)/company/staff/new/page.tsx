@@ -82,6 +82,7 @@ export default function NewStaffPage() {
         buId: firstBu.buId,
       });
       const staffId = res.data.id;
+      const { username, defaultPassword } = res.data;
 
       // Add remaining BUs
       for (let i = 1; i < pendingBus.length; i++) {
@@ -95,11 +96,16 @@ export default function NewStaffPage() {
         }
       }
 
-      return staffId;
+      return { staffId, username, defaultPassword };
     },
-    onSuccess: async () => {
+    onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: ['staff'] });
-      await Swal.fire('Created!', 'Staff member has been added.', 'success');
+      await Swal.fire({
+        title: 'Staff Created!',
+        html: `Login credentials:<br><b>Username:</b> ${result.username}<br><b>Password:</b> ${result.defaultPassword}`,
+        icon: 'success',
+        confirmButtonText: 'OK',
+      });
       router.push('/company/staff');
     },
     onError: (err: Error) => {

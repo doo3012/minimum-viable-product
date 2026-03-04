@@ -5,6 +5,7 @@ using Api.Common.Jwt;
 using Api.Features.Auth.ChangePassword;
 using Api.Features.Auth.Login;
 using Api.Features.BusinessUnits.Create;
+using Api.Features.BusinessUnits.Delete;
 using Api.Features.BusinessUnits.List;
 using Api.Features.ChatPermissions.Grant;
 using Api.Features.ChatTokens.CreateChatToken;
@@ -133,6 +134,7 @@ app.MapChangePassword();
 
 // Business Units
 app.MapCreateBu();
+app.MapDeleteBu();
 app.MapListBu();
 
 // Staff

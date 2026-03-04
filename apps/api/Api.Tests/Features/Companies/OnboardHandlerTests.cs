@@ -41,7 +41,7 @@ public class OnboardHandlerTests
         (await db.BusinessUnits.CountAsync()).Should().Be(1);
         var bu = await db.BusinessUnits.FirstAsync();
         bu.IsDefault.Should().BeTrue();
-        bu.Name.Should().Be("Default");
+        bu.Name.Should().Be("Head Quarter");
 
         (await db.Users.CountAsync()).Should().Be(1);
         var user = await db.Users.FirstAsync();

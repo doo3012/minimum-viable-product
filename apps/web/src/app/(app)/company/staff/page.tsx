@@ -99,13 +99,15 @@ export default function CompanyStaffPage() {
                   >
                     Edit
                   </button>
-                  <button
-                    onClick={() => handleDelete(staff)}
-                    disabled={deleteMutation.isPending}
-                    className="text-sm text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-200 hover:bg-red-50 transition disabled:opacity-50"
-                  >
-                    Delete
-                  </button>
+                  {staff.role !== 'Owner' && (
+                    <button
+                      onClick={() => handleDelete(staff)}
+                      disabled={deleteMutation.isPending}
+                      className="text-sm text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-200 hover:bg-red-50 transition disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
 

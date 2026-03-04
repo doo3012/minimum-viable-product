@@ -16,6 +16,10 @@ public class OnboardHandler(AppDbContext db, IPublishEndpoint publishEndpoint)
         if (exists)
             throw new InvalidOperationException($"Company '{cmd.CompanyName}' already exists.");
 
+        var emailTaken = await db.Users.AnyAsync(u => u.Username == cmd.Email, ct);
+        if (emailTaken)
+            throw new InvalidOperationException($"Email '{cmd.Email}' is already in use.");
+
         // 1. Create company
         var company = new Company {
             Id = Guid.NewGuid(),
@@ -30,7 +34,7 @@ public class OnboardHandler(AppDbContext db, IPublishEndpoint publishEndpoint)
         var bu = new BusinessUnit {
             Id = Guid.NewGuid(),
             CompanyId = company.Id,
-            Name = "Default",
+            Name = "Head Quarter",
             IsDefault = true,
             CreatedAt = DateTime.UtcNow
         };

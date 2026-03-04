@@ -14,6 +14,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -70,6 +71,38 @@ export default function BuManagementPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (buId: string) => api.delete(`/business-units/${buId}`),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['business-units'] });
+      try {
+        const buRes = await api.get('/staff/me/bu-assignments');
+        setBuAssignments(buRes.data);
+      } catch {}
+      Swal.fire('Deleted!', 'Business unit has been removed.', 'success');
+    },
+    onError: (err: Error) => {
+      const message = axios.isAxiosError(err) && err.response?.data?.error
+        ? err.response.data.error
+        : 'Failed to delete business unit.';
+      Swal.fire('Error', message, 'error');
+    },
+  });
+
+  const handleDelete = async (bu: BusinessUnit) => {
+    const result = await Swal.fire({
+      title: 'Delete Business Unit?',
+      text: `Are you sure you want to delete "${bu.name}"? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      confirmButtonText: 'Delete',
+    });
+    if (result.isConfirmed) {
+      deleteMutation.mutate(bu.id);
+    }
+  };
+
   const columns = [
     col.accessor('name', { header: 'Name' }),
     col.accessor('isDefault', {
@@ -79,6 +112,23 @@ export default function BuManagementPage() {
     col.accessor('createdAt', {
       header: 'Created At',
       cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+    }),
+    col.display({
+      id: 'actions',
+      header: 'Actions',
+      cell: (info) => {
+        const bu = info.row.original;
+        if (bu.isDefault) return null;
+        return (
+          <button
+            onClick={() => handleDelete(bu)}
+            disabled={deleteMutation.isPending}
+            className="text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
+          >
+            Delete
+          </button>
+        );
+      },
     }),
   ];
 

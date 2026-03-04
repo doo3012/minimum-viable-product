@@ -21,6 +21,7 @@ public class GetStaffHandler(AppDbContext db)
 
         return new StaffDto(s.Id, s.FirstName, s.LastName, s.UserId,
             s.User?.Role ?? "",
+            s.User?.Username ?? "",
             s.StaffBus.Count,
             s.StaffBus.Select(b => new StaffBuDto(
                 b.BuId, b.Bu.Name, b.Email,

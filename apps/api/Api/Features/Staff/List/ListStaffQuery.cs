@@ -7,5 +7,5 @@ public record ListStaffQuery : IRequest<IEnumerable<StaffDto>>, ITenantScoped;
 public record StaffBuDto(Guid BuId, string BuName, string Email, bool HasChatAccess);
 public record StaffDto(
     Guid Id, string FirstName, string LastName, Guid? UserId,
-    string Role, int BuCount,
+    string Role, string Username, int BuCount,
     IEnumerable<StaffBuDto> BuAssignments);

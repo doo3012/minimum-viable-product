@@ -28,6 +28,7 @@ interface StaffDetail {
   firstName: string;
   lastName: string;
   role: string;
+  username: string;
   buAssignments: StaffBuInfo[];
 }
 
@@ -143,6 +144,14 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
           onSubmit={handleSubmit((d) => updateProfile.mutate(d))}
           className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4"
         >
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Username</label>
+            <input
+              value={data.username}
+              readOnly
+              className="mt-1 w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-500 cursor-not-allowed"
+            />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">First Name</label>

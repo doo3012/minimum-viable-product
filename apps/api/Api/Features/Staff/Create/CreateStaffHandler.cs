@@ -6,22 +6,22 @@ using Microsoft.EntityFrameworkCore;
 namespace Api.Features.Staff.Create;
 
 public class CreateStaffHandler(AppDbContext db)
-    : IRequestHandler<CreateStaffCommand, Guid>
+    : IRequestHandler<CreateStaffCommand, CreateStaffResult>
 {
-    public async Task<Guid> Handle(CreateStaffCommand cmd, CancellationToken ct)
+    public async Task<CreateStaffResult> Handle(CreateStaffCommand cmd, CancellationToken ct)
     {
-        // 1. Create User with auto-generated username
-        var slug = $"{cmd.FirstName.ToLower()}.{cmd.LastName.ToLower()}";
-        var username = $"{slug}@staff";
+        // 1. Create User — use email as username
+        var username = cmd.Email;
         var usernameExists = await db.Users.AnyAsync(u => u.Username == username, ct);
         if (usernameExists)
-            throw new InvalidOperationException($"Username '{username}' already exists");
+            throw new InvalidOperationException($"Email '{username}' is already in use.");
 
+        var defaultPassword = $"Welcome@{cmd.FirstName}1";
         var user = new User {
             Id = Guid.NewGuid(),
             CompanyId = cmd.CompanyId,
             Username = username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword($"Welcome@{cmd.FirstName}1"),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword),
             Role = cmd.Role,
             MustChangePassword = true,
             CreatedAt = DateTime.UtcNow
@@ -51,6 +51,6 @@ public class CreateStaffHandler(AppDbContext db)
         db.StaffBus.Add(staffBu);
 
         await db.SaveChangesAsync(ct);
-        return profile.Id;
+        return new CreateStaffResult(profile.Id, username, defaultPassword);
     }
 }

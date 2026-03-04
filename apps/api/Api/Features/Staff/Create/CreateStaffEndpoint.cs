@@ -16,8 +16,8 @@ public static class CreateStaffEndpoint
             { CompanyId = companyId };
             try
             {
-                var id = await mediator.Send(cmd, ct);
-                return Results.Created($"/api/staff/{id}", new { id });
+                var result = await mediator.Send(cmd, ct);
+                return Results.Created($"/api/staff/{result.Id}", result);
             }
             catch (InvalidOperationException ex)
             {
