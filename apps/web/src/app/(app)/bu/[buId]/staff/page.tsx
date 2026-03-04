@@ -1,27 +1,27 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type SortingState,
-} from '@tanstack/react-table';
 import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
+import Link from 'next/link';
 
-interface StaffMember {
+interface StaffBuDto {
+  buId: string;
+  buName: string;
+  email: string;
+  hasChatAccess: boolean;
+}
+
+interface StaffDto {
   id: string;
   firstName: string;
   lastName: string;
+  userId: string | null;
   role: string;
-  email: string;
+  buCount: number;
+  buAssignments: StaffBuDto[];
 }
-
-const col = createColumnHelper<StaffMember>();
 
 export default function BuStaffPage({
   params,
@@ -29,32 +29,22 @@ export default function BuStaffPage({
   params: Promise<{ buId: string }>;
 }) {
   const { buId } = use(params);
-  const { buAssignments } = useAuthStore();
+  const { globalRole, buAssignments } = useAuthStore();
   const activeBu = buAssignments.find((b) => b.buId === buId);
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const buRole = activeBu?.role;
 
-  const { data, isLoading, isError } = useQuery<StaffMember[]>({
-    queryKey: ['bu-staff', buId],
-    queryFn: () => api.get(`/business-units/${buId}/staff`).then((r) => r.data),
+  const isOwner = globalRole === 'Owner';
+  const isAdmin = buRole === 'Admin' || isOwner;
+
+  const { data, isLoading, isError } = useQuery<StaffDto[]>({
+    queryKey: ['staff'],
+    queryFn: () => api.get('/staff').then((r) => r.data),
   });
 
-  const columns = [
-    col.accessor((row) => `${row.firstName} ${row.lastName}`, {
-      id: 'fullName',
-      header: 'Full Name',
-    }),
-    col.accessor('role', { header: 'Role' }),
-    col.accessor('email', { header: 'Email' }),
-  ];
-
-  const table = useReactTable({
-    data: data ?? [],
-    columns,
-    state: { sorting },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  });
+  // Filter staff to only those assigned to this BU
+  const buStaff = data?.filter((s) =>
+    s.buAssignments.some((b) => b.buId === buId)
+  );
 
   return (
     <div className="space-y-6">
@@ -65,39 +55,59 @@ export default function BuStaffPage({
       {isLoading && <p className="text-gray-500">Loading...</p>}
       {isError && <p className="text-red-500">Failed to load staff.</p>}
 
-      {data && (
+      {buStaff && (
         <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
-              {table.getHeaderGroups().map((hg) => (
-                <tr key={hg.id}>
-                  {hg.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      onClick={header.column.getToggleSortingHandler()}
-                      className="px-4 py-3 text-left font-medium text-gray-600 cursor-pointer select-none"
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.getIsSorted() === 'asc'
-                        ? ' \u2191'
-                        : header.column.getIsSorted() === 'desc'
-                          ? ' \u2193'
-                          : ''}
-                    </th>
-                  ))}
-                </tr>
-              ))}
+              <tr>
+                <th className="px-4 py-3 text-left font-medium text-gray-600">Name</th>
+                {isOwner && (
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">Role</th>
+                )}
+                {isAdmin && (
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">Email</th>
+                )}
+                {isOwner && (
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">Actions</th>
+                )}
+              </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="hover:bg-gray-50">
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-gray-700">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              {buStaff.map((staff) => {
+                const buAssignment = staff.buAssignments.find((b) => b.buId === buId);
+                return (
+                  <tr key={staff.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-gray-700">
+                      {staff.firstName} {staff.lastName}
                     </td>
-                  ))}
+                    {isOwner && (
+                      <td className="px-4 py-3 text-gray-700">{staff.role}</td>
+                    )}
+                    {isAdmin && (
+                      <td className="px-4 py-3 text-gray-700">
+                        {buAssignment?.email ?? '—'}
+                      </td>
+                    )}
+                    {isOwner && (
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/company/staff/${staff.id}`}
+                          className="text-blue-600 hover:underline text-sm"
+                        >
+                          Edit
+                        </Link>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+              {buStaff.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                    No staff assigned to this business unit.
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
