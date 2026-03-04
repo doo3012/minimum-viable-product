@@ -11,11 +11,15 @@ interface SidebarItem {
 }
 
 export function DynamicSidebar({ activeBuId }: { activeBuId?: string }) {
-  const { globalRole, buAssignments } = useAuthStore();
+  const { globalRole, buAssignments, activeBuId: storedBuId } = useAuthStore();
   const pathname = usePathname();
 
   const isOwner = globalRole === 'Owner';
-  const activeBu = buAssignments.find((b) => b.buId === activeBuId);
+
+  // Fallback: if no activeBuId from URL (Global pages), use stored activeBuId
+  const effectiveBuId = activeBuId || storedBuId || buAssignments[0]?.buId;
+
+  const activeBu = buAssignments.find((b) => b.buId === effectiveBuId);
   const buRole = activeBu?.role;
   const isAdmin = buRole === 'Admin' || isOwner;
   const hasChatAccess = activeBu?.hasChatAccess ?? false;
@@ -27,12 +31,12 @@ export function DynamicSidebar({ activeBuId }: { activeBuId?: string }) {
     { label: 'Global Staff', href: '/company/staff', show: isOwner },
     { label: 'BU Access Control', href: '/company/access-control', show: isOwner },
 
-    // BU-scoped
-    ...(activeBuId
+    // BU-scoped (show when effectiveBuId exists)
+    ...(effectiveBuId
       ? [
-          { label: 'Dashboard', href: `/bu/${activeBuId}/dashboard`, show: true },
-          { label: 'BU Staff', href: `/bu/${activeBuId}/staff`, show: isAdmin },
-          { label: 'Chat', href: `/bu/${activeBuId}/chat`, show: hasChatAccess || isOwner },
+          { label: 'Dashboard', href: `/bu/${effectiveBuId}/dashboard`, show: true },
+          { label: 'BU Staff', href: `/bu/${effectiveBuId}/staff`, show: isAdmin },
+          { label: 'Chat', href: `/bu/${effectiveBuId}/chat`, show: hasChatAccess || isOwner },
         ]
       : []),
 
