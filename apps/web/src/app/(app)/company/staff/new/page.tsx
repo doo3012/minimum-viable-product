@@ -13,7 +13,7 @@ import { useAuthStore } from '@/stores/authStore';
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required').max(100),
   lastName: z.string().min(1, 'Last name is required').max(100),
-  role: z.enum(['Admin', 'Staff'], { required_error: 'Role is required' }),
+  role: z.enum(['Admin', 'Staff'], { message: 'Role is required' }),
 });
 type FormData = z.infer<typeof schema>;
 
