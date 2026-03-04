@@ -20,6 +20,7 @@ using Api.Features.Staff.ResetPassword;
 using Api.Features.Staff.SetPassword;
 using Api.Features.Staff.Delete;
 using Api.Features.Staff.UpdateBuScoped;
+using Api.Features.Staff.UpdateProfile;
 using Api.Infrastructure.Chat;
 using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
@@ -141,6 +142,7 @@ app.MapUpdateBuScoped();
 app.MapResetPassword();
 app.MapSetPassword();
 app.MapDeleteStaff();
+app.MapUpdateStaffProfile();
 
 // Chat Permissions
 app.MapGrantPermission();
