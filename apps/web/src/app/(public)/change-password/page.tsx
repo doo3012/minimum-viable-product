@@ -45,12 +45,14 @@ export default function ChangePasswordPage() {
       try {
         const buRes = await api.get('/staff/me/bu-assignments');
         setBuAssignments(buRes.data);
-        const firstBu = buRes.data[0];
-        if (firstBu) {
-          setActiveBuId(firstBu.buId);
-          router.push(`/bu/${firstBu.buId}/dashboard`);
+        if (buRes.data.length > 1) {
+          router.push('/bu/dashboard');
+        } else if (buRes.data.length === 1) {
+          setActiveBuId(buRes.data[0].buId);
+          router.push(`/bu/${buRes.data[0].buId}/staff`);
         } else {
-          router.push('/bu/management');
+          const role = store.globalRole;
+          router.push(role === 'Owner' ? '/bu/management' : '/login');
         }
       } catch {
         router.push('/bu/management');
