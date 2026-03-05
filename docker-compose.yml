@@ -16,15 +16,15 @@ services:
       timeout: 5s
       retries: 5
 
-  nats:
-    image: nats:latest
-    command: ["-c", "/etc/nats/nats-server.conf"]
-    ports:
-      - "4222:4222"
-      - "8222:8222"
-    volumes:
-      - ./infra/nats/nats-server.conf:/etc/nats/nats-server.conf
-      - nats_data:/data/jetstream
+  # nats:
+  #   image: nats:latest
+  #   command: ["-c", "/etc/nats/nats-server.conf"]
+  #   ports:
+  #     - "4222:4222"
+  #     - "8222:8222"
+  #   volumes:
+  #     - ./infra/nats/nats-server.conf:/etc/nats/nats-server.conf
+  #     - nats_data:/data/jetstream
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -47,7 +47,7 @@ services:
       context: ./apps/api
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=mvp;Username=postgres;Password=postgres"
       Jwt__Secret: "super-secret-key-at-least-32-chars-long!!"
@@ -61,10 +61,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      nats:
-        condition: service_started
       rabbitmq:
         condition: service_healthy
+      # nats:
+      #   condition: service_started
+
 
   chat:
     build:
@@ -81,10 +82,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      nats:
-        condition: service_started
       rabbitmq:
         condition: service_healthy
+      # nats:
+      #   condition: service_started
 
   web:
     build:
@@ -101,5 +102,6 @@ services:
 
 volumes:
   postgres_data:
-  nats_data:
   rabbitmq_data:
+  # nats_data:
+  

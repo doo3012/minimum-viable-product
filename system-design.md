@@ -10,19 +10,19 @@ graph TB
 
     subgraph Docker Compose
         Web[Next.js Web App<br/>Port 3000]
-        API[.NET API<br/>Port 5000]
+        API[.NET API<br/>Port 5001]
         Chat[Go Chat Service<br/>Port 8080]
         PG[(PostgreSQL 16<br/>Port 5432)]
-        NATS[NATS JetStream<br/>Port 4222]
+        RabbitMQ[RabbitMQ<br/>Port 5672]
     end
 
     Browser -->|HTTP| Web
     Web -->|HTTP Proxy /api/*| API
     API -->|EF Core| PG
-    API -->|Publish bu.created| NATS
+    API -->|Publish bu.created| RabbitMQ
     API -->|HTTP Sync| Chat
     Chat -->|pgx| PG
-    NATS -->|Subscribe bu.*| Chat
+    RabbitMQ -->|Consume| Chat
 ```
 
 ### 1.2 Technology Stack
@@ -33,7 +33,7 @@ graph TB
 | API | .NET 10 Minimal APIs, MediatR, EF Core | Business Logic, CQRS, Multi-Tenancy |
 | Chat Service | Go 1.25, Echo v4, pgx/v5 | Chat Workspace Management |
 | Database | PostgreSQL 16 | Data Persistence (2 schemas) |
-| Messaging | NATS JetStream | Async Event-Driven Communication |
+| Messaging | RabbitMQ (MassTransit) | Async Event-Driven Communication |
 | Container | Docker Compose | Local Development & Deployment |
 
 ### 1.3 Architectural Patterns
@@ -132,7 +132,7 @@ erDiagram
     workspaces ||--o{ workspace_members : "has"
 ```
 
-**หมายเหตุ:** ไม่มี Foreign Key ข้าม schema — `workspace_members.user_id` เชื่อมกับ `main.users.id` ผ่าน NATS events และ HTTP sync เท่านั้น
+**หมายเหตุ:** ไม่มี Foreign Key ข้าม schema — `workspace_members.user_id` เชื่อมกับ `main.users.id` ผ่าน RabbitMQ events และ HTTP sync เท่านั้น
 
 ---
 
@@ -180,27 +180,25 @@ sequenceDiagram
 
 ## 4. Inter-Service Communication
 
-### 4.1 Async: NATS JetStream (BU Provisioning)
+### 4.1 Async: RabbitMQ (BU Provisioning)
 
 ```mermaid
 sequenceDiagram
     participant API as .NET API
-    participant NATS as NATS JetStream
+    participant RabbitMQ as RabbitMQ
     participant Chat as Go Chat Service
     participant DB as PostgreSQL
 
-    API->>NATS: Publish "bu.created"<br/>{bu_id, bu_name, owner_user_id, company_id}
-    NATS->>Chat: Deliver (durable consumer: "chat-service")
+    API->>RabbitMQ: Publish "bu.created"<br/>{bu_id, bu_name, owner_user_id, company_id}
+    RabbitMQ->>Chat: Deliver to queue
     Chat->>DB: INSERT INTO chat.workspaces
     Chat->>DB: INSERT INTO chat.workspace_members<br/>(owner as admin)
-    Chat->>NATS: ACK
+    Chat->>RabbitMQ: ACK
 ```
 
-**Stream Configuration:**
-- Stream: `PLATFORM_EVENTS`
-- Subjects: `bu.*`
-- Retention: `WorkQueue` (ลบหลัง ACK)
-- Consumer: `chat-service` (durable, explicit ack)
+**Queue Configuration:**
+- Exchange: `bu-events`
+- Queue: `chat-service-bu-created`
 
 **Event Payload (`bu.created`):**
 ```json
@@ -416,7 +414,7 @@ sequenceDiagram
     participant Web as Next.js
     participant API as .NET API
     participant DB as PostgreSQL
-    participant NATS as NATS JetStream
+    participant RabbitMQ as RabbitMQ
     participant Chat as Go Chat Service
 
     User->>Web: กรอก Company Name, Address, Contact
@@ -425,8 +423,8 @@ sequenceDiagram
     API->>DB: INSERT company
     API->>DB: INSERT business_unit (Default, is_default=true)
     API->>DB: INSERT user (Owner, auto-generated password)
-    API->>NATS: Publish bu.created (with owner_user_id)
-    NATS->>Chat: Deliver event
+    API->>RabbitMQ: Publish bu.created (with owner_user_id)
+    RabbitMQ->>Chat: Deliver event
     Chat->>DB: INSERT chat.workspaces
     Chat->>DB: INSERT chat.workspace_members (Owner as admin)
     API-->>Web: {username, defaultPassword}
