@@ -17,7 +17,7 @@ public class ListStaffHandler(AppDbContext db)
                 s.User != null ? s.User.Username : "",
                 s.StaffBus.Count,
                 s.StaffBus.Select(b => new StaffBuDto(
-                    b.BuId, b.Bu.Name, b.Email,
+                    b.BuId, b.Bu.Name, b.Email, b.Role,
                     db.ChatPermissions.Any(cp => cp.StaffId == s.Id && cp.BuId == b.BuId)))))
             .ToListAsync(ct);
     }

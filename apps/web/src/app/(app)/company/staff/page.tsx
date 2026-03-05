@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
@@ -26,12 +27,15 @@ export default function CompanyStaffPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { globalRole } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<'Owner' | 'Admin' | 'Staff'>('Owner');
 
   const { data, isLoading, isError } = useQuery<StaffMember[]>({
     queryKey: ['staff'],
     queryFn: () => api.get('/staff').then((r) => r.data),
     enabled: globalRole === 'Owner',
   });
+
+  const filteredData = data?.filter((s) => s.role === activeTab) || [];
 
   const deleteMutation = useMutation({
     mutationFn: (staffId: string) => api.delete(`/staff/${staffId}`),
@@ -72,12 +76,27 @@ export default function CompanyStaffPage() {
         </button>
       </div>
 
+      <div className="flex bg-gray-100 p-1 rounded-lg w-fit">
+        {['Owner', 'Admin', 'Staff'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab as 'Owner' | 'Admin' | 'Staff')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === tab
+              ? 'bg-white text-blue-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
       {isLoading && <p className="text-gray-500">Loading...</p>}
       {isError && <p className="text-red-500">Failed to load staff.</p>}
 
       {data && (
         <div className="space-y-3">
-          {data.map((staff) => (
+          {filteredData.map((staff) => (
             <div
               key={staff.id}
               className="bg-white rounded-lg border border-gray-200 shadow-sm p-4"
@@ -117,16 +136,14 @@ export default function CompanyStaffPage() {
                   {staff.buAssignments.map((bu) => (
                     <span
                       key={bu.buId}
-                      className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${
-                        bu.hasChatAccess
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-gray-50 text-gray-500 border-gray-200'
-                      }`}
+                      className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${bu.hasChatAccess
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : 'bg-gray-50 text-gray-500 border-gray-200'
+                        }`}
                     >
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          bu.hasChatAccess ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
+                        className={`w-1.5 h-1.5 rounded-full ${bu.hasChatAccess ? 'bg-green-500' : 'bg-gray-300'
+                          }`}
                       />
                       {bu.buName}
                     </span>
@@ -136,8 +153,8 @@ export default function CompanyStaffPage() {
             </div>
           ))}
 
-          {data.length === 0 && (
-            <p className="text-gray-500 text-center py-8">No staff members found.</p>
+          {filteredData.length === 0 && (
+            <p className="text-gray-500 text-center py-8">No {activeTab} staff members found.</p>
           )}
         </div>
       )}

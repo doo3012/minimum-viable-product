@@ -11,6 +11,7 @@ interface MyProfile {
   firstName: string;
   lastName: string;
   role: string;
+  username: string;
   buAssignments: { buId: string; buName: string; email: string }[];
 }
 
@@ -20,6 +21,10 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const { data, isLoading, isError } = useQuery<MyProfile>({
     queryKey: ['my-profile'],
@@ -36,6 +41,20 @@ export default function ProfilePage() {
     },
     onError: () => {
       Swal.fire('Error', 'Failed to update profile.', 'error');
+    },
+  });
+
+  const passwordMutation = useMutation({
+    mutationFn: (pwd: string) => api.post('/auth/change-password', { newPassword: pwd }),
+    onSuccess: () => {
+      setChangingPassword(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      Swal.fire('Success', 'Password changed successfully.', 'success');
+    },
+    onError: (err: Error & { response?: { data?: { error?: string } } }) => {
+      const message = err.response?.data?.error || err.message || 'Failed to change password.';
+      Swal.fire('Error', message, 'error');
     },
   });
 
@@ -138,7 +157,77 @@ export default function ProfilePage() {
               </label>
               <p className="mt-1 text-gray-800">{globalRole ?? data.role}</p>
             </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Username (Email)
+              </label>
+              <p className="mt-1 text-gray-800">{data.username}</p>
+            </div>
           </>
+        )}
+      </div>
+
+      {/* Change Password Section */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Security</h2>
+        {changingPassword ? (
+          <div className="space-y-4 max-w-sm">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">
+                New Password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => {
+                  if (!newPassword.trim()) return;
+                  if (newPassword !== confirmPassword) {
+                    Swal.fire('Error', 'Passwords do not match.', 'error');
+                    return;
+                  }
+                  passwordMutation.mutate(newPassword);
+                }}
+                disabled={passwordMutation.isPending || !newPassword.trim()}
+                className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 transition"
+              >
+                {passwordMutation.isPending ? 'Updating...' : 'Update Password'}
+              </button>
+              <button
+                onClick={() => {
+                  setChangingPassword(false);
+                  setNewPassword('');
+                  setConfirmPassword('');
+                }}
+                className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setChangingPassword(true)}
+            className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
+          >
+            Change Password
+          </button>
         )}
       </div>
 

@@ -24,7 +24,7 @@ public class GetStaffHandler(AppDbContext db)
             s.User?.Username ?? "",
             s.StaffBus.Count,
             s.StaffBus.Select(b => new StaffBuDto(
-                b.BuId, b.Bu.Name, b.Email,
+                b.BuId, b.Bu.Name, b.Email, b.Role,
                 chatPermissions.Any(cp => cp.BuId == b.BuId))));
     }
 }

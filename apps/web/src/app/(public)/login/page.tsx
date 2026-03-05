@@ -24,7 +24,7 @@ export default function LoginPage() {
     mutationFn: (data: LoginFormData) => api.post('/auth/login', data),
     onSuccess: async (res) => {
       const { userId, role, mustChangePassword, companyName, firstName, lastName } = res.data;
-      const globalRole = role === 'Owner' ? 'Owner' : 'User';
+      const globalRole = role;
       setAuth({ userId, globalRole, mustChangePassword, companyName, firstName, lastName });
 
       if (mustChangePassword) {

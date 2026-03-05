@@ -31,6 +31,7 @@ public class GetMyProfileHandler(AppDbContext db)
             staff.FirstName,
             staff.LastName,
             staff.User?.Role ?? "",
+            staff.User?.Username ?? "",
             assignments);
     }
 }

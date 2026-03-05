@@ -108,7 +108,7 @@ export default function NewStaffPage() {
       });
       router.push('/company/staff');
     },
-    onError: (err: any) => {
+    onError: (err: Error & { response?: { data?: { error?: string } } }) => {
       const message = err.response?.data?.error || err.message || 'Failed to create staff member.';
       Swal.fire('Error', message, 'error');
     },

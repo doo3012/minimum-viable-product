@@ -38,7 +38,7 @@ async function proxy(req: NextRequest, params: { path: string[] }) {
     }
 
     return res;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('PROXY ERROR:', err);
     return NextResponse.json({ error: 'Upstream error' }, { status: 502 });
   }

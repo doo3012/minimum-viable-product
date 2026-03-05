@@ -8,6 +8,7 @@ public record MyProfileDto(
     string FirstName,
     string LastName,
     string Role,
+    string Username,
     List<MyBuAssignmentDto> BuAssignments);
 
 public record MyBuAssignmentDto(Guid BuId, string BuName, string Email);
